@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Whot — Play vs AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --black:#050505;--bg:#0a0a0a;--dim:#3a3a3a;--dimlight:#666;
+  --white:#fff;--cream:#F0EDE6;--cream-dim:#C8B89A;
+  --brown:#6B3A2A;--brown-l:#8B5040;--red:#C0392B;
+}
+html,body{height:100%;overflow:hidden;background:var(--black);color:var(--white);
+  font-family:'DM Mono',monospace;touch-action:manipulation;user-select:none;}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;
+  background:rgba(5,5,5,0.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.nav-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:18px;color:var(--white);text-decoration:none;}
+.nav-back{
+  font-size:10px;letter-spacing:.2em;color:var(--dimlight);text-decoration:none;
+  display:flex;align-items:center;gap:8px;transition:color .2s;
+}
+.nav-back:hover{color:var(--white);}
+.nav-score{font-size:11px;letter-spacing:.1em;color:var(--dimlight);}
+.nav-score span{color:var(--white);}
+
+/* ── LAYOUT ── */
+#game-root{
+  display:flex;flex-direction:column;height:100vh;
+  padding-top:52px;
+}
+
+/* ── OPPONENT AREA ── */
+#opp-area{
+  flex:0 0 auto;padding:12px 16px 8px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.player-bar{display:flex;align-items:center;justify-content:space-between;}
+.player-name{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dimlight);}
+.player-name.active{color:var(--white);}
+.hand-count{
+  font-size:11px;letter-spacing:.1em;color:var(--dimlight);
+  display:flex;align-items:center;gap:6px;
+}
+.hand-count-num{color:var(--white);font-family:'Playfair Display',serif;font-weight:900;font-size:16px;}
+.score-badge{
+  font-size:11px;letter-spacing:.06em;
+  display:flex;align-items:center;gap:4px;
+}
+.score-badge-val{color:var(--white);font-family:'Playfair Display',serif;font-weight:700;font-size:18px;}
+.score-badge-label{color:var(--dimlight);font-size:9px;letter-spacing:.15em;}
+
+/* opponent face-down cards fan */
+#opp-hand{
+  display:flex;justify-content:center;align-items:flex-end;
+  height:52px;position:relative;
+}
+.opp-card-back{
+  position:absolute;
+  width:36px;height:52px;
+  background:var(--brown);
+  border:1px solid var(--brown-l);
+  border-radius:5px;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);
+  transition:all .3s;
+}
+
+/* ── CENTER ── */
+#center-area{
+  flex:1 1 auto;
+  display:flex;align-items:center;justify-content:center;gap:24px;
+  padding:8px 16px;
+  position:relative;
+}
+
+/* pile */
+.pile-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.pile-label{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--dimlight);}
+
+.card{
+  width:72px;height:108px;
+  background:var(--cream);
+  border:1.5px solid var(--cream-dim);
+  border-radius:8px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;
+  cursor:pointer;
+  transition:transform .15s,box-shadow .15s;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);
+  flex-shrink:0;
+}
+.card:hover{box-shadow:0 8px 24px rgba(0,0,0,.7);}
+.card.playable{
+  cursor:pointer;
+  box-shadow:0 0 0 2px var(--brown),0 4px 16px rgba(0,0,0,.5);
+  transform:translateY(-6px);
+}
+.card.playable:hover{transform:translateY(-10px);}
+.card.not-playable{opacity:.45;cursor:default;}
+.card.draw-pile{cursor:pointer;}
+.card.draw-pile:hover{transform:scale(1.04);}
+
+.card-corner{
+  position:absolute;
+  font-family:'Playfair Display',serif;font-weight:900;
+  color:var(--brown);font-size:13px;line-height:1;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+}
+.card-corner.tl{top:5px;left:7px;}
+.card-corner.br{bottom:5px;right:7px;transform:rotate(180deg);}
+.card-corner-suit{width:10px;height:10px;}
+.card-center-shape{pointer-events:none;}
+
+/* draw pile back */
+.card-back{
+  background:var(--brown);
+  border:1.5px solid var(--brown-l);
+}
+.card-back-inner{
+  width:56px;height:94px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* suit called indicator */
+#called-suit{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--brown-l);
+  background:rgba(5,5,5,.9);
+  padding:4px 10px;
+  border:1px solid var(--brown);
+  display:none;
+}
+
+/* ── STATUS BAR ── */
+#status-bar{
+  text-align:center;padding:6px 16px;
+  font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--dimlight);
+  min-height:28px;
+}
+#status-bar.my-turn{color:var(--white);}
+#status-bar.warn{color:var(--brown-l);}
+
+/* ── PLAYER HAND ── */
+#player-area{
+  flex:0 0 auto;padding:6px 16px 12px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.player-bar-bottom{display:flex;align-items:center;justify-content:space-between;padding:0 4px;}
+#player-hand{
+  display:flex;justify-content:center;flex-wrap:nowrap;
+  overflow-x:auto;gap:0;
+  padding:8px 4px 4px;
+  scrollbar-width:none;
+}
+#player-hand::-webkit-scrollbar{display:none;}
+#player-hand .card{
+  width:64px;height:96px;
+  flex-shrink:0;
+  margin-right:-16px;
+  font-size:11px;
+  transition:transform .15s,box-shadow .15s,margin .15s;
+}
+#player-hand .card:last-child{margin-right:0;}
+#player-hand .card.playable:hover{z-index:10;margin-right:0;margin-left:4px;}
+#player-hand .card .card-corner{font-size:11px;}
+
+/* ── SUIT PICKER ── */
+#suit-picker{
+  display:none;position:fixed;inset:0;z-index:80;
+  background:rgba(5,5,5,.92);
+  flex-direction:column;align-items:center;justify-content:center;gap:24px;
+}
+#suit-picker.open{display:flex;}
+.suit-picker-title{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--dimlight);}
+.suit-picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.suit-btn{
+  width:120px;height:120px;
+  background:#111;border:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  cursor:pointer;transition:background .2s,border-color .2s;
+}
+.suit-btn:hover{background:#1a1a1a;border-color:var(--brown);}
+.suit-btn-name{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dimlight);}
+
+/* ── GAME OVER ── */
+#game-over{
+  display:none;position:fixed;inset:0;z-index:90;
+  background:rgba(5,5,5,.96);
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  text-align:center;padding:32px;
+}
+#game-over.open{display:flex;}
+.go-title{
+  font-family:'Playfair Display',serif;font-weight:900;
+  font-size:clamp(48px,12vw,80px);letter-spacing:-.02em;line-height:.9;
+}
+.go-title.win{color:var(--white);}
+.go-title.loss{color:var(--red);}
+.go-subtitle{font-size:11px;letter-spacing:.2em;color:var(--dimlight);text-transform:uppercase;}
+.go-scores{display:flex;gap:40px;margin:8px 0;}
+.go-score{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.go-score-val{font-family:'Playfair Display',serif;font-weight:900;font-size:40px;color:var(--white);}
+.go-score-label{font-size:9px;letter-spacing:.2em;color:var(--dimlight);text-transform:uppercase;}
+.btn-primary{
+  background:var(--white);color:var(--black);
+  font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;
+  padding:14px 32px;border:none;cursor:pointer;
+  transition:opacity .2s;margin-top:8px;
+}
+.btn-primary:hover{opacity:.85;}
+.btn-secondary{
+  background:transparent;color:var(--dimlight);
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;
+  padding:10px 24px;border:1px solid rgba(255,255,255,.1);cursor:pointer;
+  transition:all .2s;text-decoration:none;display:inline-block;
+}
+.btn-secondary:hover{color:var(--white);border-color:rgba(255,255,255,.3);}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-8px);
+  background:rgba(20,20,20,.95);border:1px solid rgba(255,255,255,.1);
+  font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  padding:8px 20px;white-space:nowrap;
+  opacity:0;transition:opacity .25s,transform .25s;z-index:60;
+  pointer-events:none;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── AI thinking ── */
+#ai-thinking{
+  display:none;position:absolute;
+  font-size:9px;letter-spacing:.2em;color:var(--dimlight);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  padding:8px 16px;background:rgba(5,5,5,.8);border:1px solid rgba(255,255,255,.06);
+}
+
+/* ── Responsive ── */
+@media(min-width:600px){
+  #player-hand .card{width:72px;height:108px;margin-right:-12px;font-size:13px;}
+  #player-hand .card .card-corner{font-size:12px;}
+  .card{width:80px;height:120px;}
+}
+@media(max-width:380px){
+  #player-hand .card{width:54px;height:81px;margin-right:-18px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back
+  </a>
+  <a href="index.html" class="nav-logo">Whot</a>
+  <div class="nav-score">Score <span id="nav-score-display">0 · 0</span></div>
+</nav>
+
+<div id="game-root">
+
+  <!-- Opponent -->
+  <div id="opp-area">
+    <div class="player-bar">
+      <div class="player-name" id="opp-name-label">AI OPPONENT</div>
+      <div class="hand-count">
+        <span class="hand-count-num" id="opp-card-count">6</span>
+        <span style="font-size:9px;letter-spacing:.1em;color:var(--dimlight);">CARDS</span>
+      </div>
+      <div class="score-badge">
+        <span class="score-badge-val" id="opp-score">0</span>
+        <span class="score-badge-label">PTS</span>
+      </div>
+    </div>
+    <div id="opp-hand"></div>
+  </div>
+
+  <!-- Center -->
+  <div id="center-area">
+    <div id="called-suit"></div>
+    <div id="ai-thinking">Thinking…</div>
+
+    <div class="pile-wrap">
+      <span class="pile-label">Draw</span>
+      <div class="card card-back draw-pile" id="draw-pile-card" onclick="playerDraw()">
+        <div class="card-back-inner">
+          <svg width="32" height="28" viewBox="0 0 32 28">
+            <text x="16" y="14" text-anchor="middle" font-family="Playfair Display" font-weight="900"
+              font-size="12" fill="rgba(255,255,255,0.15)" dy=".35em">Whot</text>
+          </svg>
+        </div>
+      </div>
+      <span class="pile-label" id="draw-count">40</span>
+    </div>
+
+    <div class="pile-wrap">
+      <span class="pile-label">Play Pile</span>
+      <div class="card" id="top-card">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="status-bar">Dealing cards…</div>
+
+  <!-- Player area -->
+  <div id="player-area">
+    <div class="player-bar-bottom">
+      <div class="score-badge">
+        <span class="score-badge-val" id="player-score">0</span>
+        <span class="score-badge-label">PTS</span>
+      </div>
+      <div class="player-name active">YOU</div>
+      <div class="hand-count">
+        <span class="hand-count-num" id="player-card-count">6</span>
+        <span style="font-size:9px;letter-spacing:.1em;color:var(--dimlight);">CARDS</span>
+      </div>
+    </div>
+    <div id="player-hand"></div>
+  </div>
+
+</div>
+
+<!-- Suit Picker -->
+<div id="suit-picker">
+  <p class="suit-picker-title">Call a suit</p>
+  <div class="suit-picker-grid">
+    <button class="suit-btn" onclick="callSuit('Circle')">
+      <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#6B3A2A"/></svg>
+      <span class="suit-btn-name">Circle</span>
+    </button>
+    <button class="suit-btn" onclick="callSuit('Triangle')">
+      <svg width="40" height="36" viewBox="0 0 40 36"><polygon points="20,0 40,36 0,36" fill="#6B3A2A"/></svg>
+      <span class="suit-btn-name">Triangle</span>
+    </button>
+    <button class="suit-btn" onclick="callSuit('Cross')">
+      <svg width="40" height="40" viewBox="0 0 40 40"><rect x="14" y="0" width="12" height="40" fill="#6B3A2A"/><rect x="0" y="14" width="40" height="12" fill="#6B3A2A"/></svg>
+      <span class="suit-btn-name">Cross</span>
+    </button>
+    <button class="suit-btn" onclick="callSuit('Square')">
+      <svg width="36" height="36" viewBox="0 0 36 36"><rect width="36" height="36" fill="#6B3A2A"/></svg>
+      <span class="suit-btn-name">Square</span>
+    </button>
+    <button class="suit-btn" onclick="callSuit('Star')" style="grid-column:span 2;">
+      <svg width="44" height="44" viewBox="0 0 44 44"><polygon points="22,0 27,16 44,17 31,27 36,44 22,34 8,44 13,27 0,17 17,16" fill="#6B3A2A"/></svg>
+      <span class="suit-btn-name">Star</span>
+    </button>
+  </div>
+</div>
+
+<!-- Game Over -->
+<div id="game-over">
+  <div class="go-title" id="go-title">YOU WIN!</div>
+  <div class="go-subtitle" id="go-subtitle">Round complete</div>
+  <div class="go-scores">
+    <div class="go-score">
+      <span class="go-score-val" id="go-player-score">0</span>
+      <span class="go-score-label">Your Score</span>
+    </div>
+    <div class="go-score">
+      <span class="go-score-val" id="go-ai-score">0</span>
+      <span class="go-score-label">AI Score</span>
+    </div>
+  </div>
+  <div id="go-elim" style="font-size:11px;letter-spacing:.12em;color:var(--red);display:none;">
+    Eliminated at 100+ points
+  </div>
+  <button class="btn-primary" onclick="newRound()">Play Again</button>
+  <a href="index.html" class="btn-secondary">Back to Home</a>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────
+// SUITS & DECK
+// ─────────────────────────────────────────────────
+const SUITS = ['Circle','Triangle','Cross','Square','Star'];
+
+function suitSVG(suit, size=16){
+  const s = size, h = Math.round(size*0.9);
+  if(suit==='Circle')   return `<svg width="${s}" height="${s}" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#6B3A2A"/></svg>`;
+  if(suit==='Triangle') return `<svg width="${s}" height="${h}" viewBox="0 0 20 18"><polygon points="10,0 20,18 0,18" fill="#6B3A2A"/></svg>`;
+  if(suit==='Cross')    return `<svg width="${s}" height="${s}" viewBox="0 0 20 20"><rect x="7" y="0" width="6" height="20" fill="#6B3A2A"/><rect x="0" y="7" width="20" height="6" fill="#6B3A2A"/></svg>`;
+  if(suit==='Square')   return `<svg width="${s}" height="${s}" viewBox="0 0 18 18"><rect width="18" height="18" fill="#6B3A2A"/></svg>`;
+  if(suit==='Star')     return `<svg width="${s}" height="${s}" viewBox="0 0 22 22"><polygon points="11,0 13.9,7.6 22,8.2 16,13.4 18.2,21.6 11,17 3.8,21.6 6,13.4 0,8.2 8.1,7.6" fill="#6B3A2A"/></svg>`;
+  return '';
+}
+
+function buildDeck(){
+  const cards=[];
+  let id=0;
+  for(const suit of SUITS){
+    const nums = suit==='Star'
+      ? [1,2,3,4,5,7,8,10,11,12,13,14]
+      : [1,2,3,4,5,6,7,8,9,10,11,12,13,14];
+    for(const n of nums){
+      cards.push({id:id++, suit, number:n, isWhot:false});
+    }
+  }
+  // 5 Whot cards (number=20)
+  for(let i=0;i<5;i++) cards.push({id:id++, suit:'Whot', number:20, isWhot:true});
+  return cards;
+}
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function pointValue(card){
+  if(card.isWhot) return 20;
+  if(card.suit==='Star') return card.number*2;
+  return card.number;
+}
+
+// ─────────────────────────────────────────────────
+// GAME STATE
+// ─────────────────────────────────────────────────
+let state = {};
+
+function initGame(){
+  const deck = shuffle(buildDeck());
+  const playerHand = deck.splice(0,6);
+  const aiHand     = deck.splice(0,6);
+
+  // First non-Whot to play pile
+  let startIdx = deck.findIndex(c=>!c.isWhot);
+  if(startIdx===-1) startIdx=0;
+  const [startCard] = deck.splice(startIdx,1);
+
+  state = {
+    playerHand,
+    aiHand,
+    drawPile: deck,
+    playPile: [startCard],
+    playerScore: state.playerScore||0,
+    aiScore:     state.aiScore||0,
+    currentTurn: 'player', // 'player' | 'ai'
+    calledSuit:  null,
+    pendingPickup: 0,
+    round: (state.round||0)+1,
+    busy: false,
+  };
+
+  renderAll();
+  setStatus('Your turn', 'my-turn');
+  showToast(`Round ${state.round}`);
+}
+
+// ─────────────────────────────────────────────────
+// LEGALITY
+// ─────────────────────────────────────────────────
+function topCard(){ return state.playPile[state.playPile.length-1]; }
+
+function activeSuit(){
+  if(state.calledSuit) return state.calledSuit;
+  return topCard().suit;
+}
+
+function canPlay(card){
+  const top = topCard();
+  if(card.isWhot) return true;
+  if(state.pendingPickup>0){
+    // can only counter with same special
+    return card.number===top.number && (top.number===2||top.number===5);
+  }
+  const suit = activeSuit();
+  return card.suit===suit || card.number===top.number;
+}
+
+function playableCards(hand){ return hand.filter(canPlay); }
+
+// ─────────────────────────────────────────────────
+// RENDER HELPERS
+// ─────────────────────────────────────────────────
+function renderCard(card, opts={}){
+  const {clickable=false, playable=false, small=false} = opts;
+  const div = document.createElement('div');
+  div.className = 'card' + (playable?' playable':'') + (!clickable&&!playable?' not-playable':'');
+  div.dataset.id = card.id;
+
+  if(card.isWhot){
+    div.innerHTML = `
+      <div class="card-corner tl"><span>20</span><span style="font-size:7px;opacity:.5">w~</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+        <span style="font-size:7px;color:var(--brown);opacity:.5">w~</span>
+        <span style="font-family:'Playfair Display',serif;font-weight:900;color:var(--brown);font-size:15px;line-height:1">Whot</span>
+        <span style="font-family:'Playfair Display',serif;font-weight:900;color:var(--brown);font-size:15px;line-height:1;transform:rotate(180deg)">Whot</span>
+        <span style="font-size:7px;color:var(--brown);opacity:.5;transform:rotate(180deg)">w~</span>
+      </div>
+      <div class="card-corner br"><span>20</span><span style="font-size:7px;opacity:.5">w~</span></div>`;
+  } else {
+    const centerSize = small?28:32;
+    div.innerHTML = `
+      <div class="card-corner tl">
+        <span>${card.number}</span>
+        <span class="card-corner-suit">${suitSVG(card.suit,9)}</span>
+      </div>
+      <div class="card-center-shape">${suitSVG(card.suit,centerSize)}</div>
+      <div class="card-corner br">
+        <span>${card.number}</span>
+        <span class="card-corner-suit">${suitSVG(card.suit,9)}</span>
+      </div>`;
+  }
+  return div;
+}
+
+function renderTopCard(){
+  const top = topCard();
+  const el = document.getElementById('top-card');
+  el.innerHTML='';
+  const inner = renderCard(top,{clickable:false});
+  inner.style.cssText='width:100%;height:100%;position:absolute;inset:0;border:none;border-radius:inherit;box-shadow:none;cursor:default;';
+  el.appendChild(inner);
+}
+
+function renderPlayerHand(){
+  const hand = document.getElementById('player-hand');
+  hand.innerHTML='';
+  const isMyTurn = state.currentTurn==='player' && !state.busy;
+  state.playerHand.forEach(card=>{
+    const ok = isMyTurn && canPlay(card);
+    const el = renderCard(card,{clickable:ok, playable:ok});
+    if(ok) el.addEventListener('click',()=>playerPlay(card));
+    hand.appendChild(el);
+  });
+  document.getElementById('player-card-count').textContent=state.playerHand.length;
+}
+
+function renderOppHand(){
+  const hand = document.getElementById('opp-hand');
+  hand.innerHTML='';
+  const count = state.aiHand.length;
+  const maxVisible = Math.min(count, 12);
+  const total = 180; // spread px
+  const step  = count<=1?0:Math.min(22, total/(count-1));
+  const start = -(step*(maxVisible-1))/2;
+  for(let i=0;i<maxVisible;i++){
+    const div = document.createElement('div');
+    div.className='opp-card-back';
+    div.style.left = `calc(50% + ${start + i*step}px - 18px)`;
+    div.style.transform = `rotate(${(i-(maxVisible-1)/2)*1.5}deg)`;
+    div.style.zIndex = i;
+    hand.appendChild(div);
+  }
+  document.getElementById('opp-card-count').textContent=count;
+}
+
+function renderScores(){
+  document.getElementById('player-score').textContent=state.playerScore;
+  document.getElementById('opp-score').textContent=state.aiScore;
+  document.getElementById('nav-score-display').textContent=`${state.playerScore} · ${state.aiScore}`;
+}
+
+function renderDrawCount(){
+  document.getElementById('draw-count').textContent=state.drawPile.length;
+}
+
+function renderCalledSuit(){
+  const el = document.getElementById('called-suit');
+  if(state.calledSuit){
+    el.style.display='block';
+    el.textContent=`Called: ${state.calledSuit}`;
+  } else {
+    el.style.display='none';
+  }
+}
+
+function renderAll(){
+  renderTopCard();
+  renderPlayerHand();
+  renderOppHand();
+  renderScores();
+  renderDrawCount();
+  renderCalledSuit();
+  const opp = document.getElementById('opp-name-label');
+  opp.className='player-name'+(state.currentTurn==='ai'?' active':'');
+}
+
+// ─────────────────────────────────────────────────
+// PLAYER ACTIONS
+// ─────────────────────────────────────────────────
+function playerPlay(card){
+  if(state.currentTurn!=='player'||state.busy) return;
+  if(!canPlay(card)) return;
+  doPlay('player', card);
+}
+
+function playerDraw(){
+  if(state.currentTurn!=='player'||state.busy) return;
+  doDraw('player');
+}
+
+function doPlay(who, card){
+  state.busy=true;
+  const hand = who==='player'?state.playerHand:state.aiHand;
+  const idx = hand.findIndex(c=>c.id===card.id);
+  if(idx===-1){state.busy=false;return;}
+  hand.splice(idx,1);
+  state.playPile.push(card);
+  state.calledSuit=null;
+
+  // Check win
+  if(hand.length===0){
+    state.busy=false;
+    endRound(who);
+    return;
+  }
+  if(hand.length===1) showToast(who==='player'?'Last card!':'AI: Last card!');
+  if(hand.length===2) showToast(who==='player'?'Semi last!':'AI: Semi last!');
+
+  applySpecial(who, card);
+}
+
+function applySpecial(who, card){
+  const opp = who==='player'?'ai':'player';
+  switch(card.number){
+    case 1: // Hold On — same player goes again
+      renderAll();
+      setStatus(who==='player'?'Hold On — play again!':'AI plays again', who==='player'?'my-turn':'');
+      scheduleNextTurn(who);
+      break;
+    case 2: // Pick Two
+      state.pendingPickup+=2;
+      renderAll();
+      setStatus(who==='player'?`AI must pick ${state.pendingPickup} or counter`:`Pick ${state.pendingPickup} or counter`,'warn');
+      scheduleNextTurn(opp);
+      break;
+    case 5: // Pick Three
+      state.pendingPickup+=3;
+      renderAll();
+      setStatus(who==='player'?`AI must pick ${state.pendingPickup} or counter`:`Pick ${state.pendingPickup} or counter`,'warn');
+      scheduleNextTurn(opp);
+      break;
+    case 8: // Suspend — skip opp
+      renderAll();
+      setStatus(who==='player'?'AI suspended!':'You are suspended!','warn');
+      scheduleNextTurn(who);
+      break;
+    case 14: // General Market — opp picks 1
+      drawCards(opp,1);
+      renderAll();
+      setStatus(who==='player'?'General Market — AI picks 1':'General Market — you pick 1','warn');
+      scheduleNextTurn(opp);
+      break;
+    case 20: // Whot wild
+      renderAll();
+      if(who==='player'){
+        document.getElementById('suit-picker').classList.add('open');
+        state.busy=false; // wait for suit selection
+      } else {
+        const aiSuit = aiBestSuit();
+        state.calledSuit=aiSuit;
+        showToast(`AI called ${aiSuit}`);
+        renderCalledSuit();
+        scheduleNextTurn(opp);
+      }
+      break;
+    default:
+      renderAll();
+      setStatus(opp==='player'?'Your turn':'AI is thinking…', opp==='player'?'my-turn':'');
+      scheduleNextTurn(opp);
+  }
+}
+
+function doDraw(who){
+  if(state.pendingPickup>0){
+    drawCards(who, state.pendingPickup);
+    showToast(who==='player'?`You drew ${state.pendingPickup} cards`:`AI drew ${state.pendingPickup} cards`);
+    state.pendingPickup=0;
+    const opp=who==='player'?'ai':'player';
+    renderAll();
+    setStatus(opp==='player'?'Your turn':'AI is thinking…',opp==='player'?'my-turn':'');
+    scheduleNextTurn(opp);
+  } else {
+    drawCards(who,1);
+    renderAll();
+    const opp=who==='player'?'ai':'player';
+    setStatus(opp==='player'?'Your turn':'AI is thinking…',opp==='player'?'my-turn':'');
+    scheduleNextTurn(opp);
+  }
+}
+
+function drawCards(who, n){
+  const hand=who==='player'?state.playerHand:state.aiHand;
+  for(let i=0;i<n;i++){
+    if(state.drawPile.length===0) reshufflePile();
+    if(state.drawPile.length>0) hand.push(state.drawPile.shift());
+  }
+}
+
+function reshufflePile(){
+  if(state.playPile.length<=1) return;
+  const top=state.playPile.pop();
+  state.drawPile=[...shuffle(state.playPile)];
+  state.playPile=[top];
+  showToast('Deck reshuffled');
+}
+
+function callSuit(suit){
+  document.getElementById('suit-picker').classList.remove('open');
+  state.calledSuit=suit;
+  showToast(`You called ${suit}`);
+  renderAll();
+  setStatus('AI is thinking…','');
+  scheduleNextTurn('ai');
+}
+
+// ─────────────────────────────────────────────────
+// TURN SCHEDULING
+// ─────────────────────────────────────────────────
+function scheduleNextTurn(who){
+  state.currentTurn=who;
+  state.busy=false;
+  if(who==='ai'){
+    document.getElementById('ai-thinking').style.display='block';
+    const delay=900+Math.random()*600;
+    setTimeout(aiTurn,delay);
+  } else {
+    document.getElementById('ai-thinking').style.display='none';
+    renderPlayerHand();
+  }
+}
+
+// ─────────────────────────────────────────────────
+// AI LOGIC
+// ─────────────────────────────────────────────────
+function aiBestSuit(){
+  const counts={};
+  for(const c of state.aiHand) if(!c.isWhot) counts[c.suit]=(counts[c.suit]||0)+1;
+  let best='Circle',max=0;
+  for(const [s,n] of Object.entries(counts)) if(n>max){max=n;best=s;}
+  return best;
+}
+
+function aiTurn(){
+  document.getElementById('ai-thinking').style.display='none';
+  if(state.currentTurn!=='ai'||state.busy) return;
+  state.busy=true;
+
+  const playable=playableCards(state.aiHand);
+
+  if(playable.length===0){
+    // Must draw
+    doDraw('ai');
+    return;
+  }
+
+  // AI strategy: prefer specials, then suit matches, then number matches, then Whot last
+  let chosen=null;
+  const top=topCard();
+
+  if(state.pendingPickup>0){
+    // counter if possible
+    const counter=playable.find(c=>c.number===top.number&&(top.number===2||top.number===5));
+    chosen=counter||null;
+    if(!chosen){doDraw('ai');return;}
+  } else {
+    // Prefer: pick2/3/suspends/holdOns, then suit match, then number match, then Whot
+    const specials=playable.filter(c=>[1,2,5,8,14].includes(c.number));
+    const suitMatch=playable.filter(c=>!c.isWhot&&c.suit===activeSuit());
+    const numMatch=playable.filter(c=>!c.isWhot&&c.number===top.number);
+    const whots=playable.filter(c=>c.isWhot);
+
+    // Save Whot for when truly stuck
+    if(specials.length) chosen=specials[0];
+    else if(suitMatch.length) chosen=suitMatch[Math.floor(Math.random()*suitMatch.length)];
+    else if(numMatch.length) chosen=numMatch[0];
+    else if(whots.length) chosen=whots[0];
+    else chosen=playable[0];
+  }
+
+  doPlay('ai',chosen);
+}
+
+// ─────────────────────────────────────────────────
+// ROUND END
+// ─────────────────────────────────────────────────
+function endRound(winner){
+  const playerPenalty=state.playerHand.reduce((s,c)=>s+pointValue(c),0);
+  const aiPenalty    =state.aiHand.reduce((s,c)=>s+pointValue(c),0);
+
+  if(winner==='player') state.aiScore    +=aiPenalty;
+  else                  state.playerScore+=playerPenalty;
+
+  renderScores();
+
+  const go=document.getElementById('game-over');
+  const goTitle=document.getElementById('go-title');
+  const goSub=document.getElementById('go-subtitle');
+  const goElim=document.getElementById('go-elim');
+  document.getElementById('go-player-score').textContent=state.playerScore;
+  document.getElementById('go-ai-score').textContent=state.aiScore;
+
+  const playerElim=state.playerScore>=100;
+  const aiElim    =state.aiScore>=100;
+  const gameOver  =playerElim||aiElim;
+
+  if(winner==='player'){
+    goTitle.textContent=gameOver&&playerElim?'YOU LOSE':'YOU WIN!';
+    goTitle.className='go-title '+(playerElim?'loss':'win');
+    goSub.textContent=playerElim?`You've been eliminated (${state.playerScore} pts)`:`AI scored ${aiPenalty} penalty pts`;
+  } else {
+    goTitle.textContent=gameOver&&aiElim?'AI ELIMINATED!':'YOU LOSE';
+    goTitle.className='go-title '+(aiElim?'win':'loss');
+    goSub.textContent=aiElim?`AI eliminated (${state.aiScore} pts)`:`You scored ${playerPenalty} penalty pts`;
+  }
+
+  goElim.style.display=gameOver?'block':'none';
+  if(gameOver) goElim.textContent=playerElim?`You're out at ${state.playerScore} pts`:`AI out at ${state.aiScore} pts`;
+
+  go.classList.add('open');
+}
+
+function newRound(){
+  document.getElementById('game-over').classList.remove('open');
+  // reset scores if someone hit 100
+  if(state.playerScore>=100||state.aiScore>=100){
+    state.playerScore=0;state.aiScore=0;state.round=0;
+  }
+  initGame();
+}
+
+// ─────────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────────
+function setStatus(msg,cls=''){
+  const el=document.getElementById('status-bar');
+  el.textContent=msg;
+  el.className='';
+  if(cls) el.classList.add(cls);
+}
+
+let toastTimer=null;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2000);
+}
+
+// ─────────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────────
+state.playerScore=0;state.aiScore=0;state.round=0;
+setTimeout(initGame,300);
+</script>
+</body>
+</html>
