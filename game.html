@@ -88,9 +88,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 #qv-hand::-webkit-scrollbar{display:none;}
 
 /* ── TOURNAMENT layout: absolute 4-sided ── */
-/* FIX: #tv inherits position:fixed from .gview (ID specificity was overriding it).
-   overflow:hidden stays for card-fly clipping; explicit fixed prevents flow collapse. */
-#tv{position:fixed;overflow:hidden;}
+/* FIX: removed position:relative so .gview's position:fixed applies naturally.
+   ID selector (1,0,0) was previously overriding .gview class (0,1,0) position:fixed.
+   overflow:hidden stays for card-fly clipping. */
+#tv{overflow:hidden;}
 
 /* tournament status overlay */
 #tv-status{position:absolute;bottom:calc(var(--ch) + 28px);
@@ -277,13 +278,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .pname.active{animation:activePulse 1.9s ease-in-out infinite;}
 .tz-name.active{animation:activePulse 1.9s ease-in-out infinite;}
 
-/* Card fan-in stagger: each card fans out with spring + individual delay */
+/* Card fan-in stagger: spring-slide from below, NO opacity change so cards are
+   always visible (opacity:0 start was making the hand appear blank on launch) */
 @keyframes cardFanIn{
-  from{opacity:0;transform:translateY(24px) scale(.94);}
-  to{opacity:1;transform:translateY(0) scale(1);}
+  from{transform:translateY(22px) scale(.93);}
+  to{transform:translateY(0) scale(1);}
 }
 .card.fan-in{
-  animation:cardFanIn .36s var(--spring-heavy) both;
+  animation:cardFanIn .38s var(--spring-heavy) both;
   animation-delay:var(--stagger,0ms);
 }
 
