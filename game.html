@@ -17,6 +17,8 @@
   --mut:#555;--wht:#fff;--red:#C0392B;
   --expo:cubic-bezier(.16,1,.3,1);
   --spring:cubic-bezier(.34,1.56,.64,1);
+  --spring-cards:cubic-bezier(.34,1.18,.64,1);
+  --spring-heavy:cubic-bezier(.175,.885,.32,1.275);
   --cw:70px;--ch:105px;
   --scw:32px;--sch:48px;
 }
@@ -29,7 +31,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:clamp(10px,2.5vh,22px);padding:clamp(20px,4vw,48px);text-align:center;}
 .ms-logo{font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(48px,11vw,88px);line-height:.88;letter-spacing:-.03em;color:var(--wht);margin-bottom:2px;}
+  font-size:clamp(48px,11vw,88px);line-height:.88;letter-spacing:-.04em;color:var(--wht);margin-bottom:2px;}
 .ms-logo span{display:block;transform:rotate(180deg);}
 .ms-eyebrow{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--brl);margin-bottom:clamp(16px,3vh,28px);}
 .ms-label{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;}
@@ -47,12 +49,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .ms-back{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-decoration:none;margin-top:6px;transition:color .2s;}
 .ms-back:hover{color:var(--wht);}
 
-/* TOP BAR */
+/* TOP BAR — glassmorphism upgrade */
 #topbar{position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;z-index:200;
   height:50px;display:flex;align-items:center;justify-content:space-between;
   padding:0 clamp(12px,3vw,26px);
-  background:rgba(5,5,5,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--bdr);}
+  background:rgba(5,5,5,.72);
+  backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.1);
+  box-shadow:0 1px 0 rgba(255,255,255,.04),0 4px 24px rgba(0,0,0,.35);}
 .tb-l{display:flex;align-items:center;gap:12px;}
 .tb-back{display:flex;align-items:center;gap:5px;font-size:9px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--mut);cursor:pointer;transition:color .2s;
@@ -60,7 +64,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .tb-back:hover{color:var(--wht);}
 .tb-sep{width:1px;height:14px;background:var(--bdr2);}
 .tb-mode{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--br);}
-.tb-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--wht);}
+.tb-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--wht);letter-spacing:-.025em;}
 .tb-rnd{font-size:9px;letter-spacing:.1em;color:var(--mut);}
 .tb-rnd b{color:var(--wht);font-weight:400;}
 
@@ -84,7 +88,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 #qv-hand::-webkit-scrollbar{display:none;}
 
 /* ── TOURNAMENT layout: absolute 4-sided ── */
-#tv{position:relative;overflow:hidden;}
+/* FIX: #tv inherits position:fixed from .gview (ID specificity was overriding it).
+   overflow:hidden stays for card-fly clipping; explicit fixed prevents flow collapse. */
+#tv{position:fixed;overflow:hidden;}
 
 /* tournament status overlay */
 #tv-status{position:absolute;bottom:calc(var(--ch) + 28px);
@@ -102,10 +108,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .tz.elim{opacity:.3;}
 .tz-info{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 #tz-left .tz-info,#tz-right .tz-info{flex-direction:column;align-items:flex-start;gap:1px;}
-.tz-name{font-size:7px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);}
+.tz-name{font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);
+  transition:color .3s,opacity .3s;font-weight:500;}
 .tz-name.active{color:var(--wht);}
-.tz-pts{font-family:'Playfair Display',serif;font-weight:900;font-size:10px;color:var(--wht);}
-.tz-l{font-size:7px;color:var(--mut);}
+.tz-pts{font-family:'Playfair Display',serif;font-weight:900;font-size:10px;color:var(--wht);letter-spacing:-.01em;}
+.tz-l{font-size:7px;color:var(--mut);letter-spacing:.04em;}
 .fan-h{position:relative;height:clamp(34px,5vh,48px);min-width:60px;overflow:visible;}
 .fan-v{position:relative;width:clamp(28px,4vw,38px);height:clamp(90px,16vh,140px);overflow:visible;}
 .sback{position:absolute;background:var(--br);border:1px solid var(--brl);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.6);}
@@ -123,30 +130,39 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 #tv-hand::-webkit-scrollbar{display:none;}
 #tv-player-row{width:100%;padding:2px clamp(12px,3vw,24px);display:flex;align-items:center;justify-content:space-between;}
 
-/* shared think/called badges */
-.tbadge{position:absolute;font-size:8px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--mut);padding:4px 12px;border:1px solid var(--bdr);
-  background:rgba(8,8,8,.94);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;}
+/* shared think/called badges — glassmorphism overlays */
+.tbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mut);padding:4px 14px;border:1px solid rgba(255,255,255,.1);border-radius:2px;
+  background:rgba(8,8,8,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);}
 .tbadge.on{opacity:1;}
-.cbadge{position:absolute;font-size:8px;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--brl);padding:3px 11px;border:1px solid var(--br);
-  background:rgba(8,8,8,.94);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;}
+.cbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brl);padding:4px 14px;border:1px solid rgba(107,58,42,.4);border-radius:2px;
+  background:rgba(8,8,8,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;
+  box-shadow:0 2px 12px rgba(107,58,42,.2);}
 .cbadge.on{opacity:1;}
 
-/* SHARED CARD */
+/* SHARED CARD — 8px grid radius, inset highlight for tactile depth */
 .card{width:var(--cw);height:var(--ch);background:var(--cream);border:1.5px solid var(--cdim);
-  border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  position:relative;flex-shrink:0;box-shadow:0 4px 18px rgba(0,0,0,.55);
-  transition:transform .18s var(--spring),box-shadow .18s;cursor:default;overflow:hidden;}
+  border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .18s var(--spring-cards),box-shadow .18s;cursor:default;overflow:hidden;}
 .cback{background:var(--br);border-color:var(--brl);cursor:pointer;}
 .cback:hover{transform:scale(1.04);}.cback:active{transform:scale(.98);}
 .cback-inner{width:calc(var(--cw) - 14px);height:calc(var(--ch) - 14px);
   border:1px solid rgba(255,255,255,.1);border-radius:3px;
   display:flex;align-items:center;justify-content:center;}
 .cbl{font-family:'Playfair Display',serif;font-weight:900;font-size:9px;color:rgba(255,255,255,.14);}
-.card.playable{box-shadow:0 0 0 2px var(--br),0 6px 22px rgba(107,58,42,.5);transform:translateY(-8px);cursor:pointer;}
-.card.playable:hover{transform:translateY(-13px);box-shadow:0 0 0 2px var(--brl),0 12px 30px rgba(107,58,42,.6);}
-.card.playable:active{transform:translateY(-9px);}
+.card.playable{
+  box-shadow:0 0 0 2px var(--br),0 8px 28px rgba(107,58,42,.55),inset 0 1px 0 rgba(255,255,255,.18);
+  transform:translateY(-8px);cursor:pointer;}
+.card.playable:hover{
+  transform:translateY(-14px);
+  box-shadow:0 0 0 2px var(--brl),0 16px 36px rgba(107,58,42,.65),inset 0 1px 0 rgba(255,255,255,.2);}
+.card.playable:active{transform:translateY(-10px);}
 .card.dim{opacity:.32;cursor:not-allowed;}
 .card.ov{margin-right:clamp(-28px,-4vw,-16px);}
 .card.ov:last-child{margin-right:0;}
@@ -161,15 +177,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .pile-l{font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);}
 .pile-n{font-size:8px;color:var(--mut);}
 
-/* PLAYER INFO ROWS */
+/* PLAYER INFO ROWS — tightened for high-tier gaming app feel */
 .pbar{display:flex;align-items:center;justify-content:space-between;}
-.pname{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);transition:color .3s;}
+.pname{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);
+  transition:color .3s,opacity .3s;font-weight:500;}
 .pname.active{color:var(--wht);}
 .pcnt{display:flex;align-items:baseline;gap:3px;}
-.pcnt-n{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);}
-.pcnt-l{font-size:8px;color:var(--mut);}
-.ppts{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);}
-.ppts-l{font-size:8px;color:var(--mut);}
+.pcnt-n{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
+.pcnt-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
+.ppts{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
+.ppts-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
 
 /* FLY LAYER */
 #fly-layer{position:fixed;inset:0;pointer-events:none;z-index:500;}
@@ -179,28 +196,36 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .fly.face{background:var(--cream);border:1.5px solid var(--cdim);}
 .fly.back{background:var(--br);border:1.5px solid var(--brl);}
 
-/* SUIT PICKER */
-#suit-picker{position:fixed;inset:0;z-index:600;background:rgba(5,5,5,.96);backdrop-filter:blur(10px);
+/* SUIT PICKER — full glassmorphism modal */
+#suit-picker{position:fixed;inset:0;z-index:600;
+  background:rgba(5,5,5,.72);
+  backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);
   display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.5vh,22px);}
 #suit-picker.open{display:flex;animation:popIn .22s var(--expo) both;}
-.sp-title{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);}
-.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.sp-title{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .sp-btn{width:clamp(88px,12vw,112px);height:clamp(88px,12vw,112px);
-  background:var(--s1);border:1px solid var(--bdr);
+  background:rgba(13,13,13,.7);border:1px solid rgba(255,255,255,.1);border-radius:2px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  cursor:pointer;transition:background .18s,border-color .18s,transform .2s var(--spring);}
-.sp-btn:hover{background:var(--s2);border-color:var(--br);transform:scale(1.04);}
+  cursor:pointer;transition:background .18s,border-color .18s,transform .22s var(--spring-heavy),box-shadow .18s;}
+.sp-btn:hover{background:rgba(20,20,20,.85);border-color:rgba(107,58,42,.5);transform:scale(1.04);
+  box-shadow:0 0 0 1px rgba(107,58,42,.3),0 8px 24px rgba(107,58,42,.2),inset 0 1px 0 rgba(255,255,255,.1);}
 .sp-btn:active{transform:scale(.97);}
-.sp-nm{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);}
+.sp-nm{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);}
 .sp-full{grid-column:span 2;width:100%;height:clamp(56px,7vw,72px);}
 
-/* GAME OVER */
-#game-over{position:fixed;inset:0;z-index:700;background:rgba(5,5,5,.97);backdrop-filter:blur(10px);
+/* GAME OVER — glassmorphism overlay */
+#game-over{position:fixed;inset:0;z-index:700;
+  background:rgba(5,5,5,.78);
+  backdrop-filter:blur(36px) saturate(160%);-webkit-backdrop-filter:blur(36px) saturate(160%);
+  border-top:1px solid rgba(255,255,255,.06);
   display:none;flex-direction:column;align-items:center;justify-content:center;
   gap:clamp(8px,1.8vh,16px);padding:clamp(18px,4vw,44px);text-align:center;}
 #game-over.open{display:flex;animation:popIn .28s var(--expo) both;}
 .go-r{font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(44px,10vw,90px);letter-spacing:-.03em;line-height:.88;}
+  font-size:clamp(44px,10vw,90px);letter-spacing:-.04em;line-height:.88;}
 .go-r.win{color:var(--wht);}.go-r.loss{color:var(--red);}
 .go-sub{font-size:9px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;}
 .go-sc{display:flex;gap:clamp(20px,4vw,44px);margin:2px 0;}
@@ -228,16 +253,48 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .st-stat{text-align:right;font-size:7px;letter-spacing:.1em;text-transform:uppercase;}
 .st-stat.ok{color:var(--brl);}.st-stat.out{color:var(--red);}
 
-/* TOAST */
-#toast{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));
+/* TOAST — glass pill */
+#toast{position:fixed;top:calc(58px + env(safe-area-inset-top,0px));
   left:50%;transform:translateX(-50%) translateY(-6px);
-  background:rgba(12,12,12,.97);border:1px solid var(--bdr2);
-  font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  padding:6px 16px;white-space:nowrap;
+  background:rgba(12,12,12,.75);
+  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid rgba(255,255,255,.12);border-radius:2px;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  font-size:8px;letter-spacing:.18em;text-transform:uppercase;
+  padding:6px 18px;white-space:nowrap;
   opacity:0;transition:opacity .2s,transform .2s var(--expo);z-index:800;pointer-events:none;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 @keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+
+/* ── TASK 3: High-Fidelity Motion ── */
+
+/* Active-turn pulse: subtle breathing glow for current player indicator */
+@keyframes activePulse{
+  0%,100%{opacity:1;}
+  50%{opacity:.5;text-shadow:0 0 10px rgba(255,255,255,.3);}
+}
+.pname.active{animation:activePulse 1.9s ease-in-out infinite;}
+.tz-name.active{animation:activePulse 1.9s ease-in-out infinite;}
+
+/* Card fan-in stagger: each card fans out with spring + individual delay */
+@keyframes cardFanIn{
+  from{opacity:0;transform:translateY(24px) scale(.94);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.card.fan-in{
+  animation:cardFanIn .36s var(--spring-heavy) both;
+  animation-delay:var(--stagger,0ms);
+}
+
+/* Draw-card pop: card drawn from pile pops into hand */
+@keyframes cardPop{
+  0%{transform:scale(.88);}
+  60%{transform:scale(1.06);}
+  100%{transform:scale(1);}
+}
+.card.just-drawn{animation:cardPop .3s var(--spring-heavy) both;}
+
 @media(max-width:390px){:root{--cw:62px;--ch:93px;--scw:26px;--sch:40px;}}
 @media(min-width:768px){:root{--cw:78px;--ch:117px;}}
 </style>
@@ -657,22 +714,24 @@ function endRound(winner){
 
 /* ═══ ANIMATIONS ═══ */
 
-/* fly a card from fromRect to toRect */
+/* fly a card from fromRect to toRect
+   Uses spring-cards bezier for natural overshoot physics */
 function flyIt(fromRect,toRect,html,isBack,onDone){
   const layer=document.getElementById('fly-layer');
   const cw=cssv('--cw')||70,ch=cssv('--ch')||105;
   const el=document.createElement('div');
   el.className='fly '+(isBack?'back':'face');
-  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;transition:none;`;
+  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;transition:none;border-radius:8px;`;
   if(html)el.innerHTML=html;
   layer.appendChild(el);el.getBoundingClientRect();
   const dx=toRect.left+(toRect.width-(fromRect.width||cw))/2-fromRect.left;
   const dy=toRect.top+(toRect.height-(fromRect.height||ch))/2-fromRect.top;
-  const rot=(Math.random()-.5)*12;
-  el.style.transition='transform 0.32s cubic-bezier(.22,1,.36,1),opacity 0.08s 0.28s';
+  const rot=(Math.random()-.5)*10;
+  /* spring-cards: .34,1.18,.64,1 — subtle overshoot, snappy landing */
+  el.style.transition='transform 0.38s cubic-bezier(.34,1.18,.64,1),opacity 0.06s 0.34s';
   el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
   el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},360);
+  setTimeout(()=>{el.remove();if(onDone)onDone();},420);
 }
 
 /* deal animation: draw pile → each player fan, round-robin */
@@ -743,7 +802,8 @@ function fanTargetRect(name,idx){
   return{left:window.innerWidth/2,top:window.innerHeight/2,width:scw,height:sch};
 }
 
-/* draw card animation: draw pile → player fan */
+/* draw card animation: draw pile → player fan
+   After fly, the real card renders with a pop spring burst */
 function animDrawCard(name,card,onDone){
   const drawEl=document.getElementById(MODE==='quick'?'qv-draw':'tv-draw');
   if(!drawEl){if(onDone)onDone();return;}
@@ -752,7 +812,17 @@ function animDrawCard(name,card,onDone){
   const idx=Math.max(0,hand.length-1);
   const to=fanTargetRect(name,idx);
   const isMe=name==='You';
-  flyIt(from,to,isMe?faceHTML(card):backHTML(),!isMe,onDone);
+  flyIt(from,to,isMe?faceHTML(card):backHTML(),!isMe,()=>{
+    // After card lands, briefly mark the real rendered card with pop anim
+    if(isMe){
+      setTimeout(()=>{
+        const fanId=MODE==='quick'?'qv-hand':'tv-hand';
+        const newCard=document.querySelector(`#${fanId} .card[data-id="${card.id}"]`);
+        if(newCard){newCard.classList.add('just-drawn');setTimeout(()=>newCard.classList.remove('just-drawn'),350);}
+      },60);
+    }
+    if(onDone)onDone();
+  });
 }
 
 /* AI plays: fan back → play pile (with face reveal) */
@@ -781,10 +851,11 @@ function animAIPlay(who,card,onDone){
   const dy=tr.top+(tr.height-ch)/2-fr.top;
   const rot=(Math.random()-.5)*10;
   el.style.width=`${cw}px`;el.style.height=`${ch}px`;
-  el.style.transition='width 0s,height 0s,transform 0.35s cubic-bezier(.22,1,.36,1),opacity 0.08s 0.3s';
+  /* spring-cards with reveal: card expands to full size mid-flight */
+  el.style.transition='width 0s,height 0s,transform 0.40s cubic-bezier(.34,1.18,.64,1),opacity 0.06s 0.36s';
   el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
   el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},390);
+  setTimeout(()=>{el.remove();if(onDone)onDone();},450);
 }
 
 /* player plays: hand card → play pile */
@@ -902,11 +973,19 @@ function renderPlayerHand(){
   const fan=document.getElementById(fanId);if(!fan)return;
   const myHand=G.hands['You']||[];
   const ok=myTurn()&&!G.busy;
+  // Track previous card IDs to detect if this is a fresh hand (stagger) vs update (no stagger)
+  const prevIds=new Set([...fan.querySelectorAll('.card')].map(c=>c.dataset.id));
+  const isFreshDeal=prevIds.size===0&&myHand.length>1;
   fan.innerHTML='';
-  myHand.forEach(card=>{
+  myHand.forEach((card,idx)=>{
     const playable=ok&&canPlay(card);
     const el=document.createElement('div');
-    el.className='card ov'+(playable?' playable':(ok?' dim':''));
+    // fan-in stagger on fresh deal (game start), spring-in on single new card
+    const isNew=!prevIds.has(String(card.id));
+    const animClass=(isFreshDeal||(isNew&&myHand.length>1))?'fan-in':'';
+    el.className='card ov'+(playable?' playable':(ok?' dim':''))+(animClass?' '+animClass:'');
+    // Stagger delay: 40ms per card position, so hand fans out L→R
+    if(animClass)el.style.setProperty('--stagger',`${idx*40}ms`);
     el.dataset.id=card.id;el.innerHTML=faceHTML(card);
     if(playable)el.addEventListener('click',()=>{if(!myTurn()||G.busy)return;animPlayerPlay(card);});
     fan.appendChild(el);
