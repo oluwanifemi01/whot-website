@@ -563,13 +563,13 @@ function initRound(){
 }
 
 /* ── LOGIC ── */
-function top(){return G.play[G.play.length-1];}
-function actSuit(){return G.calledSuit||top().suit;}
+function topCard(){return G.play[G.play.length-1];}
+function actSuit(){return G.calledSuit||topCard().suit;}
 function cur(){return G.turnOrder[G.turnIdx];}
 function myTurn(){return cur()==='You';}
 
 function canPlay(card){
-  const t=top();
+  const t=topCard();
   if(G.pendingPickup>0)return!card.isWhot&&card.number===t.number&&(t.number===2||t.number===5);
   if(card.isWhot)return true;
   return card.suit===actSuit()||card.number===t.number;
@@ -683,7 +683,7 @@ function runAI(){
   if(!G||G.busy)return;
   const who=cur();if(who==='You')return;
   G.busy=true;hideThinker();
-  const hand=G.hands[who],t=top(),playable=hand.filter(canPlay);
+  const hand=G.hands[who],t=topCard(),playable=hand.filter(canPlay);
   if(G.pendingPickup>0){
     const ctr=hand.find(c=>!c.isWhot&&c.number===t.number&&(t.number===2||t.number===5));
     if(ctr){animAIPlay(who,ctr,()=>doPlay(who,ctr));return;}
@@ -884,7 +884,7 @@ function getSeat(name){
 function renderTopCard(){
   const id=MODE==='quick'?'qv-top':'tv-top';
   const el=document.getElementById(id);if(!el)return;
-  el.className='card';el.innerHTML=faceHTML(top());
+  el.className='card';el.innerHTML=faceHTML(topCard());
 }
 
 function renderDrawCnt(){
