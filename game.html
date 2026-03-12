@@ -16,10 +16,11 @@
   --cream:#F0EDE6;--cdim:#C8B89A;
   --br:#6B3A2A;--brl:#8B5040;
   --mut:#555;--wht:#fff;--red:#C0392B;
-  --expo:cubic-bezier(.16,1,.3,1);
-  --spring:cubic-bezier(.34,1.56,.64,1);
-  --spring-cards:cubic-bezier(.22,1,.36,1);
-  --spring-heavy:cubic-bezier(.22,1,.36,1);
+  /* Polished Easing Curves */
+  --expo:cubic-bezier(0.16, 1, 0.3, 1);
+  --spring:cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-cards:cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --spring-heavy:cubic-bezier(0.25, 1.1, 0.5, 1);
   --cw:70px;--ch:105px;
   --scw:32px;--sch:48px;
 }
@@ -40,17 +41,18 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .ms-card{border:1px solid var(--bdr2);background:var(--s1);
   padding:clamp(16px,2.5vh,24px) clamp(18px,3vw,28px);
   display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;
-  transition:background .18s,border-color .2s,transform .22s var(--spring);}
-.ms-card:hover{background:var(--s2);border-color:var(--br);transform:translateY(-2px);}
-.ms-card:active{transform:translateY(0);}
+  transition:background .2s,border-color .2s,transform .3s var(--spring);}
+.ms-card:hover{background:var(--s2);border-color:var(--br);transform:translateY(-3px) scale(1.01);}
+.ms-card:active{transform:translateY(0) scale(0.99);}
 .ms-icon{width:36px;height:36px;flex-shrink:0;opacity:.7;}
 .ms-name{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(15px,2.2vw,19px);color:var(--wht);margin-bottom:3px;}
 .ms-desc{font-size:9px;letter-spacing:.06em;color:var(--mut);line-height:1.5;}
-.ms-arr{width:13px;height:13px;flex-shrink:0;opacity:.22;margin-left:auto;}
+.ms-arr{width:13px;height:13px;flex-shrink:0;opacity:.22;margin-left:auto;transition:transform .3s var(--spring), opacity .3s;}
+.ms-card:hover .ms-arr {transform: translateX(3px); opacity: .8;}
 .ms-back{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-decoration:none;margin-top:6px;transition:color .2s;}
 .ms-back:hover{color:var(--wht);}
 
-/* TOP BAR — glassmorphism upgrade */
+/* TOP BAR */
 #topbar{position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;z-index:200;
   height:50px;display:flex;align-items:center;justify-content:space-between;
   padding:0 clamp(12px,3vw,26px);
@@ -65,7 +67,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .tb-back:hover{color:var(--wht);}
 .tb-sep{width:1px;height:14px;background:var(--bdr2);}
 .tb-mode{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--br);}
-.tb-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--wht);letter-spacing:-.025em;}
+.tb-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--wht);letter-spacing:-.025em;transition:opacity .2s;}
+.tb-logo:hover{opacity:.8;}
 .tb-rnd{font-size:9px;letter-spacing:.1em;color:var(--mut);}
 .tb-rnd b{color:var(--wht);font-weight:400;}
 
@@ -74,40 +77,33 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   left:0;right:0;bottom:env(safe-area-inset-bottom,0px);display:none;}
 .gview.on{display:flex;}
 
-/* ── QUICK PLAY layout ── */
+/* QUICK PLAY */
 #qv{flex-direction:column;}
 #qv-opp{flex:0 0 auto;padding:clamp(8px,1.5vh,12px) clamp(12px,3vw,24px) 4px;display:flex;flex-direction:column;gap:4px;}
 #qv-opp-fan{height:clamp(44px,6.5vh,60px);position:relative;overflow:visible;}
 #qv-center{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;
   gap:clamp(16px,3.5vw,40px);padding:4px clamp(12px,3vw,24px);position:relative;}
 #qv-status{flex:0 0 auto;height:26px;display:flex;align-items:center;justify-content:center;
-  font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
+  font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);transition:color .3s;}
 #qv-status.yours{color:var(--wht);}#qv-status.warn{color:var(--brl);}
 #qv-player{flex:0 0 auto;padding:2px clamp(12px,3vw,24px) clamp(8px,2vh,14px);display:flex;flex-direction:column;gap:4px;}
 #qv-hand{display:flex;align-items:flex-end;justify-content:center;overflow-x:auto;overflow-y:visible;
   scrollbar-width:none;padding:8px 4px 2px;}
 #qv-hand::-webkit-scrollbar{display:none;}
 
-/* ── TOURNAMENT layout: absolute 4-sided ── */
-/* FIX: removed position:relative so .gview's position:fixed applies naturally.
-   ID selector (1,0,0) was previously overriding .gview class (0,1,0) position:fixed.
-   overflow:hidden stays for card-fly clipping. */
+/* TOURNAMENT */
 #tv{overflow:hidden;}
-
-/* tournament status overlay */
 #tv-status{position:absolute;bottom:calc(var(--ch) + 28px);
   left:50%;transform:translateX(-50%);
   font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--mut);white-space:nowrap;z-index:15;}
+  color:var(--mut);white-space:nowrap;z-index:15;transition:color .3s;}
 #tv-status.yours{color:var(--wht);}#tv-status.warn{color:var(--brl);}
-
-/* side zones */
-.tz{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;z-index:5;}
+.tz{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;z-index:5;transition:opacity .4s ease;}
 #tz-top{top:4px;left:0;right:0;align-items:center;}
 #tz-bot{bottom:4px;left:0;right:0;align-items:center;}
 #tz-left{top:0;bottom:0;left:4px;flex-direction:row;align-items:center;}
 #tz-right{top:0;bottom:0;right:4px;flex-direction:row-reverse;align-items:center;}
-.tz.elim{opacity:.3;}
+.tz.elim{opacity:.25;}
 .tz-info{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 #tz-left .tz-info,#tz-right .tz-info{flex-direction:column;align-items:flex-start;gap:1px;}
 .tz-name{font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);
@@ -117,186 +113,177 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .tz-l{font-size:7px;color:var(--mut);letter-spacing:.04em;}
 .fan-h{position:relative;height:clamp(34px,5vh,48px);min-width:60px;overflow:visible;}
 .fan-v{position:relative;width:clamp(28px,4vw,38px);height:clamp(90px,16vh,140px);overflow:visible;}
-.sback{position:absolute;background:var(--br);border:1px solid var(--brl);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.6);}
+.sback{position:absolute;background:var(--br);border:1px solid var(--brl);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.4);}
 .sback-h{width:var(--scw);height:var(--sch);}
 .sback-v{width:var(--scw);height:var(--sch);}
 
-/* center table */
 .ctable{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   display:flex;align-items:center;justify-content:center;
   gap:clamp(14px,2.5vw,32px);z-index:10;}
-
-/* tournament player (bottom) hand */
 #tv-hand{display:flex;align-items:flex-end;justify-content:center;
   overflow-x:auto;overflow-y:visible;scrollbar-width:none;padding:6px 4px 2px;}
 #tv-hand::-webkit-scrollbar{display:none;}
 #tv-player-row{width:100%;padding:2px clamp(12px,3vw,24px);display:flex;align-items:center;justify-content:space-between;}
 
-/* shared think/called badges — glassmorphism overlays */
-.tbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--mut);padding:4px 14px;border:1px solid rgba(255,255,255,.1);border-radius:2px;
-  background:rgba(8,8,8,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;
-  box-shadow:0 2px 12px rgba(0,0,0,.4);}
-.tbadge.on{opacity:1;}
-.cbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--brl);padding:4px 14px;border:1px solid rgba(107,58,42,.4);border-radius:2px;
-  background:rgba(8,8,8,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;
-  box-shadow:0 2px 12px rgba(107,58,42,.2);}
-.cbadge.on{opacity:1;}
+/* BADGES */
+.tbadge, .cbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  padding:5px 16px;border-radius:3px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  opacity:0;transition:opacity .3s var(--expo), transform .3s var(--expo);pointer-events:none;white-space:nowrap;z-index:25;}
+.tbadge{color:var(--mut);border:1px solid rgba(255,255,255,.1);background:rgba(8,8,8,.8);box-shadow:0 4px 16px rgba(0,0,0,.5);transform:translateX(-50%) translateY(4px);}
+.cbadge{color:var(--brl);border:1px solid rgba(107,58,42,.4);background:rgba(8,8,8,.85);box-shadow:0 4px 16px rgba(107,58,42,.25);transform:translateX(-50%) translateY(-4px);}
+.tbadge.on, .cbadge.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* SHARED CARD — 8px grid radius, inset highlight for tactile depth */
+/* SHARED CARD */
 .card{width:var(--cw);height:var(--ch);background:var(--cream);border:1.5px solid var(--cdim);
   border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   position:relative;flex-shrink:0;
-  box-shadow:0 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14);
-  transition:transform .18s var(--spring-cards),box-shadow .18s;cursor:default;overflow:hidden;}
-.cback{background:var(--br);border-color:var(--brl);cursor:pointer;}
-.cback:hover{transform:scale(1.04);}.cback:active{transform:scale(.98);}
+  box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .28s var(--spring-cards),box-shadow .28s ease, margin .28s var(--spring-cards);cursor:default;overflow:hidden;}
+.cback{background:var(--br);border-color:var(--brl);cursor:pointer;transition:transform .2s var(--spring);}
+.cback:hover{transform:scale(1.04) translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.6);}
+.cback:active{transform:scale(.98) translateY(0);}
 .cback-inner{width:calc(var(--cw) - 14px);height:calc(var(--ch) - 14px);
-  border:1px solid rgba(255,255,255,.1);border-radius:3px;
+  border:1px solid rgba(255,255,255,.15);border-radius:3px;
   display:flex;align-items:center;justify-content:center;}
 .cbl{font-family:'Playfair Display',serif;font-weight:900;font-size:9px;color:rgba(255,255,255,.14);}
 .card.playable{
-  box-shadow:0 0 0 2px var(--br),0 8px 28px rgba(107,58,42,.55),inset 0 1px 0 rgba(255,255,255,.18);
-  transform:translateY(-8px);cursor:pointer;}
+  box-shadow:0 0 0 2px var(--br),0 6px 20px rgba(107,58,42,.4),inset 0 1px 0 rgba(255,255,255,.2);
+  transform:translateY(-6px);cursor:pointer;}
+/* Smoother, elevated tactile hover */
 .card.playable:hover{
-  transform:translateY(-14px);
-  box-shadow:0 0 0 2px var(--brl),0 16px 36px rgba(107,58,42,.65),inset 0 1px 0 rgba(255,255,255,.2);}
-.card.playable:active{transform:translateY(-10px);}
-.card.dim{opacity:.32;cursor:not-allowed;}
+  transform:translateY(-12px) scale(1.03);
+  box-shadow:0 0 0 2px var(--brl),0 16px 36px rgba(107,58,42,.55),inset 0 1px 0 rgba(255,255,255,.3);}
+.card.playable:active{transform:translateY(-8px) scale(0.98);}
+.card.dim{opacity:.4;cursor:not-allowed;}
 .card.ov{margin-right:clamp(-28px,-4vw,-16px);}
 .card.ov:last-child{margin-right:0;}
-.card.ov.playable:hover{z-index:20;margin-right:clamp(-14px,-2vw,-4px);}
+.card.ov.playable:hover{z-index:20;margin-right:clamp(-12px,-1.5vw,-2px);}
 .cc{position:absolute;font-family:'Playfair Display',serif;font-weight:900;
   color:var(--br);font-size:clamp(8px,1vw,11px);line-height:1;
   display:flex;flex-direction:column;align-items:center;gap:1px;}
 .cc.tl{top:5px;left:6px;}.cc.br{bottom:5px;right:6px;transform:rotate(180deg);}
 
-/* PILE */
 .pile-w{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .pile-l{font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);}
-.pile-n{font-size:8px;color:var(--mut);}
+.pile-n{font-size:8px;color:var(--mut);transition:color .2s;}
 
-/* PLAYER INFO ROWS — tightened for high-tier gaming app feel */
+/* PLAYER INFO */
 .pbar{display:flex;align-items:center;justify-content:space-between;}
 .pname{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);
   transition:color .3s,opacity .3s;font-weight:500;}
-.pname.active{color:var(--wht);}
 .pcnt{display:flex;align-items:baseline;gap:3px;}
-.pcnt-n{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
-.pcnt-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
-.ppts{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
-.ppts-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
+.pcnt-n, .ppts{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
+.pcnt-l, .ppts-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
 
-/* FLY LAYER */
 #fly-layer{position:fixed;inset:0;pointer-events:none;z-index:500;}
-.fly{position:fixed;pointer-events:none;border-radius:7px;
+.fly{position:fixed;pointer-events:none;border-radius:8px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  box-shadow:0 10px 36px rgba(0,0,0,.7);overflow:hidden;will-change:transform,opacity;}
+  box-shadow:0 12px 40px rgba(0,0,0,.6);overflow:hidden;will-change:transform,opacity;}
 .fly.face{background:var(--cream);border:1.5px solid var(--cdim);}
 .fly.back{background:var(--br);border:1.5px solid var(--brl);}
 
-/* SUIT PICKER — full glassmorphism modal */
+/* SUIT PICKER */
 #suit-picker{position:fixed;inset:0;z-index:600;
-  background:rgba(5,5,5,.72);
+  background:rgba(5,5,5,.75);
   backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);
   display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.5vh,22px);}
-#suit-picker.open{display:flex;animation:popIn .22s var(--expo) both;}
-.sp-title{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);}
-.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+#suit-picker.open{display:flex;animation:popIn .3s var(--spring-heavy) both;}
+.sp-title{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--wht);opacity:.8;}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .sp-btn{width:clamp(88px,12vw,112px);height:clamp(88px,12vw,112px);
-  background:rgba(13,13,13,.7);border:1px solid rgba(255,255,255,.1);border-radius:2px;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  cursor:pointer;transition:background .18s,border-color .18s,transform .22s var(--spring-heavy),box-shadow .18s;}
-.sp-btn:hover{background:rgba(20,20,20,.85);border-color:rgba(107,58,42,.5);transform:scale(1.04);
-  box-shadow:0 0 0 1px rgba(107,58,42,.3),0 8px 24px rgba(107,58,42,.2),inset 0 1px 0 rgba(255,255,255,.1);}
-.sp-btn:active{transform:scale(.97);}
-.sp-nm{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);}
-.sp-full{grid-column:span 2;width:100%;height:clamp(56px,7vw,72px);}
+  background:rgba(15,15,15,.7);border:1px solid rgba(255,255,255,.1);border-radius:6px;
+  box-shadow:0 4px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  cursor:pointer;transition:all .2s var(--spring-heavy);}
+.sp-btn:hover{background:rgba(25,25,25,.9);border-color:rgba(107,58,42,.6);transform:scale(1.05);
+  box-shadow:0 0 0 1px rgba(107,58,42,.4),0 12px 28px rgba(107,58,42,.3),inset 0 1px 0 rgba(255,255,255,.15);}
+.sp-btn:active{transform:scale(.96);}
+.sp-nm{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);transition:color .2s;}
+.sp-btn:hover .sp-nm{color:var(--wht);}
+.sp-full{grid-column:span 2;width:100%;height:clamp(56px,7vw,72px);flex-direction:row;}
 
-/* GAME OVER — glassmorphism overlay */
+/* GAME OVER */
 #game-over{position:fixed;inset:0;z-index:700;
-  background:rgba(5,5,5,.78);
+  background:rgba(5,5,5,.85);
   backdrop-filter:blur(36px) saturate(160%);-webkit-backdrop-filter:blur(36px) saturate(160%);
   border-top:1px solid rgba(255,255,255,.06);
   display:none;flex-direction:column;align-items:center;justify-content:center;
   gap:clamp(8px,1.8vh,16px);padding:clamp(18px,4vw,44px);text-align:center;}
-#game-over.open{display:flex;animation:popIn .28s var(--expo) both;}
+#game-over.open{display:flex;animation:popIn .35s var(--spring-heavy) both;}
 .go-r{font-family:'Playfair Display',serif;font-weight:900;
   font-size:clamp(44px,10vw,90px);letter-spacing:-.04em;line-height:.88;}
 .go-r.win{color:var(--wht);}.go-r.loss{color:var(--red);}
 .go-sub{font-size:9px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;}
-.go-sc{display:flex;gap:clamp(20px,4vw,44px);margin:2px 0;}
-.go-scc{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.go-sc{display:flex;gap:clamp(20px,4vw,44px);margin:12px 0;}
+.go-scc{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .go-sv{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(26px,4.5vw,44px);color:var(--wht);}
 .go-sl{font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);}
-.go-e{font-size:9px;letter-spacing:.1em;color:var(--red);text-transform:uppercase;}
-.go-btns{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
-.btn-p{background:var(--wht);color:var(--black);font-family:'DM Mono',monospace;
+.go-e{font-size:9px;letter-spacing:.1em;color:var(--red);text-transform:uppercase;padding:8px;background:rgba(192,57,43,.1);border-radius:4px;}
+.go-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+.btn-p{background:var(--wht);color:var(--black);font-family:'DM Mono',monospace;font-weight:500;
   font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  padding:clamp(10px,1.6vh,14px) clamp(22px,3.5vw,36px);border:none;cursor:pointer;
-  transition:opacity .18s,transform .2s var(--spring);}
-.btn-p:hover{opacity:.85;transform:translateY(-2px);}.btn-p:active{transform:translateY(0);}
+  padding:clamp(12px,1.8vh,16px) clamp(24px,4vw,40px);border:none;border-radius:3px;cursor:pointer;
+  transition:all .2s var(--spring);}
+.btn-p:hover{opacity:.9;transform:translateY(-3px);box-shadow:0 8px 24px rgba(255,255,255,.2);}
+.btn-p:active{transform:translateY(0);box-shadow:none;}
 .btn-g{background:transparent;color:var(--mut);font-family:'DM Mono',monospace;
   font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-  padding:10px 20px;border:1px solid var(--bdr);cursor:pointer;transition:color .18s,border-color .18s;}
-.btn-g:hover{color:var(--wht);border-color:var(--bdr2);}
-.standings{width:100%;max-width:340px;border:1px solid var(--bdr);overflow:hidden;margin:2px 0;}
+  padding:10px 24px;border:1px solid rgba(255,255,255,.2);border-radius:3px;cursor:pointer;transition:all .2s;}
+.btn-g:hover{color:var(--wht);border-color:var(--wht);background:rgba(255,255,255,.05);}
+
+.standings{width:100%;max-width:340px;border:1px solid rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:6px 0;background:rgba(0,0,0,.3);}
 .str{display:grid;grid-template-columns:24px 1fr 52px 52px;
-  padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;font-size:9px;}
+  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;font-size:9px;}
 .str:last-child{border-bottom:none;}
-.str.hdr{background:var(--s1);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
-.st-rank{font-family:'Playfair Display',serif;font-weight:900;font-size:13px;color:var(--brl);}
-.st-pts{text-align:right;color:var(--mut);}
+.str.hdr{background:var(--s1);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid rgba(255,255,255,.1);}
+.st-rank{font-family:'Playfair Display',serif;font-weight:900;font-size:14px;color:var(--brl);}
+.st-pts{text-align:right;color:var(--mut);font-weight:500;}
 .st-stat{text-align:right;font-size:7px;letter-spacing:.1em;text-transform:uppercase;}
 .st-stat.ok{color:var(--brl);}.st-stat.out{color:var(--red);}
 
-/* TOAST — glass pill */
+/* TOAST */
 #toast{position:fixed;top:calc(58px + env(safe-area-inset-top,0px));
-  left:50%;transform:translateX(-50%) translateY(-6px);
-  background:rgba(12,12,12,.75);
+  left:50%;transform:translateX(-50%) translateY(-10px);
+  background:rgba(18,18,18,.85);
   backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
-  border:1px solid rgba(255,255,255,.12);border-radius:2px;
-  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.15);border-radius:4px;
+  box-shadow:0 6px 20px rgba(0,0,0,.5);
   font-size:8px;letter-spacing:.18em;text-transform:uppercase;
-  padding:6px 18px;white-space:nowrap;
-  opacity:0;transition:opacity .2s,transform .2s var(--expo);z-index:800;pointer-events:none;}
+  padding:8px 20px;white-space:nowrap;
+  opacity:0;transition:opacity .25s ease-out, transform .35s var(--spring-heavy);z-index:800;pointer-events:none;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-
-/* ── TASK 3: High-Fidelity Motion ── */
-
-/* Active-turn pulse: subtle breathing glow for current player indicator */
-@keyframes activePulse{
-  0%,100%{opacity:1;}
-  50%{opacity:.5;text-shadow:0 0 10px rgba(255,255,255,.3);}
+@keyframes popIn{
+  from{opacity:0;transform:scale(.92) translateY(10px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
 }
-.pname.active{animation:activePulse 1.9s ease-in-out infinite;}
-.tz-name.active{animation:activePulse 1.9s ease-in-out infinite;}
 
-/* Card fan-in stagger: spring-slide from below, NO opacity change so cards are
-   always visible (opacity:0 start was making the hand appear blank on launch) */
+/* ── HIGH-FIDELITY MOTION POLISH ── */
+
+/* Active-turn pulse: Soft, premium breathing glow */
+@keyframes activePulse{
+  0%, 100%{opacity:1; text-shadow:0 0 4px rgba(255,255,255,.1);}
+  50%{opacity:.65; text-shadow:0 0 12px rgba(255,255,255,.5);}
+}
+.pname.active, .tz-name.active {animation:activePulse 2s ease-in-out infinite;}
+
+/* Card fan-in stagger: opacity fixed with 'both' mode, soft rotation */
 @keyframes cardFanIn{
-  from{transform:translateY(22px) scale(.93);}
-  to{transform:translateY(0) scale(1);}
+  0%{opacity:0; transform:translateY(30px) rotate(8deg) scale(.9);}
+  100%{opacity:1; transform:translateY(0) rotate(0) scale(1);}
 }
 .card.fan-in{
-  animation:cardFanIn .38s var(--spring-heavy) both;
+  animation:cardFanIn .45s var(--spring-soft) both;
   animation-delay:var(--stagger,0ms);
 }
 
-/* Draw-card pop: card drawn from pile pops into hand */
+/* Draw-card pop: dynamic scale and subtle vertical dip */
 @keyframes cardPop{
-  0%{transform:scale(.88);}
-  60%{transform:scale(1.06);}
-  100%{transform:scale(1);}
+  0%{transform:scale(.85) translateY(6px);}
+  50%{transform:scale(1.08) translateY(-4px);}
+  100%{transform:scale(1) translateY(0);}
 }
-.card.just-drawn{animation:cardPop .3s var(--spring-heavy) both;}
+.card.just-drawn{animation:cardPop .35s var(--spring-cards) both;}
 
 @media(max-width:390px){:root{--cw:62px;--ch:93px;--scw:26px;--sch:40px;}}
 @media(min-width:768px){:root{--cw:78px;--ch:117px;}}
@@ -304,7 +291,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 </head>
 <body>
 
-<!-- MODE SELECT -->
 <div id="mode-screen">
   <a href="index.html" class="ms-logo" style="text-decoration:none;color:inherit;display:block;">Whot<span>Whot</span></a>
   <p class="ms-eyebrow">Nigerian Card Game</p>
@@ -324,7 +310,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   <a href="index.html" class="ms-back">← Back to Home</a>
 </div>
 
-<!-- TOP BAR -->
 <div id="topbar">
   <div class="tb-l">
     <button class="tb-back" onclick="backToMenu()">
@@ -338,7 +323,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   <span class="tb-rnd">Round <b id="rnd-num">1</b></span>
 </div>
 
-<!-- QUICK PLAY VIEW -->
 <div id="qv" class="gview">
   <div id="qv-opp">
     <div class="pbar">
@@ -349,8 +333,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
     <div id="qv-opp-fan"></div>
   </div>
   <div id="qv-center">
-    <div class="tbadge" id="qv-think" style="top:10px;left:50%;transform:translateX(-50%);"></div>
-    <div class="cbadge" id="qv-called" style="bottom:10px;left:50%;transform:translateX(-50%);"></div>
+    <div class="tbadge" id="qv-think" style="top:10px;left:50%;"></div>
+    <div class="cbadge" id="qv-called" style="bottom:10px;left:50%;"></div>
     <div class="pile-w">
       <span class="pile-l">Draw</span>
       <div class="card cback" id="qv-draw" onclick="onDraw()"><div class="cback-inner"><span class="cbl">Whot</span></div></div>
@@ -372,10 +356,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   </div>
 </div>
 
-<!-- TOURNAMENT VIEW -->
 <div id="tv" class="gview">
-
-  <!-- Top player -->
   <div class="tz" id="tz-top">
     <div class="tz-info">
       <span class="tz-name" id="tz-top-name">Chidi</span>
@@ -384,8 +365,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
     </div>
     <div class="fan-h" id="tz-top-fan"></div>
   </div>
-
-  <!-- Left player -->
   <div class="tz" id="tz-left">
     <div class="fan-v" id="tz-left-fan"></div>
     <div class="tz-info" style="flex-direction:column;align-items:flex-start;gap:1px;margin-left:3px;">
@@ -394,8 +373,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div><span style="font-size:9px;font-family:'Playfair Display',serif;font-weight:900;color:var(--wht);" id="tz-left-cnt">0</span><span class="tz-l">c</span></div>
     </div>
   </div>
-
-  <!-- Right player -->
   <div class="tz" id="tz-right">
     <div class="fan-v" id="tz-right-fan"></div>
     <div class="tz-info" style="flex-direction:column;align-items:flex-end;gap:1px;margin-right:3px;">
@@ -404,11 +381,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div><span style="font-size:9px;font-family:'Playfair Display',serif;font-weight:900;color:var(--wht);" id="tz-right-cnt">0</span><span class="tz-l">c</span></div>
     </div>
   </div>
-
-  <!-- Center table -->
   <div class="ctable">
-    <div class="tbadge" id="tv-think" style="top:-38px;left:50%;transform:translateX(-50%);"></div>
-    <div class="cbadge" id="tv-called" style="bottom:-30px;left:50%;transform:translateX(-50%);"></div>
+    <div class="tbadge" id="tv-think" style="top:-38px;left:50%;"></div>
+    <div class="cbadge" id="tv-called" style="bottom:-30px;left:50%;"></div>
     <div class="pile-w">
       <span class="pile-l">Draw</span>
       <div class="card cback" id="tv-draw" onclick="onDraw()"><div class="cback-inner"><span class="cbl">Whot</span></div></div>
@@ -419,8 +394,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div class="card" id="tv-top"></div>
     </div>
   </div>
-
-  <!-- Bottom player (You) -->
   <div class="tz" id="tz-bot">
     <div id="tv-hand"></div>
     <div id="tv-player-row">
@@ -429,15 +402,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div class="pcnt"><span class="pcnt-n" id="tv-my-cnt">0</span><span class="pcnt-l"> cards</span></div>
     </div>
   </div>
-
-  <!-- Status -->
   <div id="tv-status">Dealing…</div>
 </div>
 
-<!-- Fly layer -->
 <div id="fly-layer"></div>
 
-<!-- Suit picker -->
 <div id="suit-picker">
   <p class="sp-title">Call a suit</p>
   <div class="sp-grid">
@@ -449,7 +418,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   </div>
 </div>
 
-<!-- Game over -->
 <div id="game-over">
   <div class="go-r" id="go-r">You Win!</div>
   <div class="go-sub" id="go-sub"></div>
@@ -467,7 +435,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 const SUITS=['Circle','Triangle','Cross','Square','Star'];
 const AI_NAMES=['Chidi','Amaka','Tunde','Ngozi'];
 
-// Tournament seats: AI[0]=top, AI[1]=left, AI[2]=right
 const SEATS={
   top:{name:'tz-top-name',pts:'tz-top-pts',cnt:'tz-top-cnt',fan:'tz-top-fan',zone:'tz-top'},
   left:{name:'tz-left-name',pts:'tz-left-pts',cnt:'tz-left-cnt',fan:'tz-left-fan',zone:'tz-left'},
@@ -545,7 +512,6 @@ function initRound(){
     round:T.round+1};
   T.round=G.round;
 
-  // Pre-deal cards (stored separately for animation)
   const dealt={};
   for(const n of names){dealt[n]=[];for(let i=0;i<6;i++){if(G.drawPile.length)dealt[n].push(G.drawPile.shift());}}
 
@@ -563,7 +529,6 @@ function initRound(){
   });
 }
 
-/* ── LOGIC ── */
 function topCard(){return G.play[G.play.length-1];}
 function actSuit(){return G.calledSuit||topCard().suit;}
 function cur(){return G.turnOrder[G.turnIdx];}
@@ -622,7 +587,6 @@ function applySpecial(who,card){
       setStat(who==='You'?'Next player suspended!':`${who} suspended someone!`,'warn');
       advance();advance();schedNext();break;
     case 14:{
-      // GENERAL MARKET: everyone else draws 1 — turn stays with who played 14
       const others=G.turnOrder.filter(n=>n!==who);
       showToast(who==='You'?'General Market — all draw 1!':`${who}: General Market!`);
       setStat('General Market!','warn');
@@ -665,7 +629,6 @@ function doDrawAction(who){
   one();
 }
 
-/* ── SCHEDULING ── */
 function schedNext(){
   G.busy=false;
   if(myTurn()){hideThinker();renderPlayerHand();setStat('Your turn','yours');}
@@ -704,7 +667,6 @@ function runAI(){
   animAIPlay(who,ch,()=>doPlay(who,ch));
 }
 
-/* ── END ROUND ── */
 function endRound(winner){
   for(const name of G.turnOrder){
     if(name!==winner){const pen=G.hands[name].reduce((s,c)=>s+score(c),0);T.scores[name]=(T.scores[name]||0)+pen;}
@@ -715,29 +677,31 @@ function endRound(winner){
   showGameOver(winner);
 }
 
-/* ═══ ANIMATIONS ═══ */
+/* ═══ POLISHED ANIMATIONS ═══ */
 
-/* fly a card from fromRect to toRect
-   Uses spring-cards bezier for natural overshoot physics */
-function flyIt(fromRect,toRect,html,isBack,onDone){
-  const layer=document.getElementById('fly-layer');
-  const cw=cssv('--cw')||70,ch=cssv('--ch')||105;
-  const el=document.createElement('div');
-  el.className='fly '+(isBack?'back':'face');
-  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;transition:none;border-radius:8px;`;
-  if(html)el.innerHTML=html;
-  layer.appendChild(el);el.getBoundingClientRect();
-  const dx=toRect.left+(toRect.width-(fromRect.width||cw))/2-fromRect.left;
-  const dy=toRect.top+(toRect.height-(fromRect.height||ch))/2-fromRect.top;
-  const rot=(Math.random()-.5)*10;
-  /* spring-cards: .34,1.18,.64,1 — subtle overshoot, snappy landing */
-  el.style.transition='transform 0.38s cubic-bezier(.34,1.18,.64,1),opacity 0.06s 0.34s';
-  el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
-  el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},420);
+function flyIt(fromRect, toRect, html, isBack, onDone) {
+  const layer = document.getElementById('fly-layer');
+  const cw = cssv('--cw') || 70, ch = cssv('--ch') || 105;
+  const el = document.createElement('div');
+  el.className = 'fly ' + (isBack ? 'back' : 'face');
+  el.style.cssText = `left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;transition:none;border-radius:8px;`;
+  if (html) el.innerHTML = html;
+  layer.appendChild(el);
+  
+  el.getBoundingClientRect(); // reflow
+  
+  const dx = toRect.left + (toRect.width - (fromRect.width || cw)) / 2 - fromRect.left;
+  const dy = toRect.top + (toRect.height - (fromRect.height || ch)) / 2 - fromRect.top;
+  const rot = (Math.random() - 0.5) * 12; 
+  
+  // Custom synced opacity fade-out to prevent stutter upon handoff
+  el.style.transition = 'transform 0.42s cubic-bezier(0.25, 1.1, 0.5, 1), opacity 0.1s 0.35s ease-out';
+  el.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+  el.style.opacity = '0';
+  
+  setTimeout(() => { el.remove(); if (onDone) onDone(); }, 450);
 }
 
-/* deal animation: draw pile → each player fan, round-robin */
 function animateDeal(names,dealt,onDone){
   const drawEl=document.getElementById(MODE==='quick'?'qv-draw':'tv-draw');
   if(!drawEl){onDone();return;}
@@ -755,7 +719,6 @@ function animateDeal(names,dealt,onDone){
   next();
 }
 
-/* get the screen rect where card[idx] lands in a player's fan */
 function fanTargetRect(name,idx){
   const cw=cssv('--cw')||70,ch=cssv('--ch')||105;
   const scw=cssv('--scw')||32,sch=cssv('--sch')||48;
@@ -779,7 +742,6 @@ function fanTargetRect(name,idx){
     return{left:fr.left+fr.width/2-sp/2+idx*step,top:fr.top,width:scw,height:sch};
   }
 
-  // Tournament seats
   const seat=getSeat(name);
   if(seat==='top'){
     const fanEl=document.getElementById('tz-top-fan');
@@ -805,8 +767,6 @@ function fanTargetRect(name,idx){
   return{left:window.innerWidth/2,top:window.innerHeight/2,width:scw,height:sch};
 }
 
-/* draw card animation: draw pile → player fan
-   After fly, the real card renders with a pop spring burst */
 function animDrawCard(name,card,onDone){
   const drawEl=document.getElementById(MODE==='quick'?'qv-draw':'tv-draw');
   if(!drawEl){if(onDone)onDone();return;}
@@ -816,19 +776,17 @@ function animDrawCard(name,card,onDone){
   const to=fanTargetRect(name,idx);
   const isMe=name==='You';
   flyIt(from,to,isMe?faceHTML(card):backHTML(),!isMe,()=>{
-    // After card lands, briefly mark the real rendered card with pop anim
     if(isMe){
       setTimeout(()=>{
         const fanId=MODE==='quick'?'qv-hand':'tv-hand';
         const newCard=document.querySelector(`#${fanId} .card[data-id="${card.id}"]`);
-        if(newCard){newCard.classList.add('just-drawn');setTimeout(()=>newCard.classList.remove('just-drawn'),350);}
-      },60);
+        if(newCard){newCard.classList.add('just-drawn');setTimeout(()=>newCard.classList.remove('just-drawn'),380);}
+      },50);
     }
     if(onDone)onDone();
   });
 }
 
-/* AI plays: fan back → play pile (with face reveal) */
 function animAIPlay(who,card,onDone){
   const topEl=document.getElementById(MODE==='quick'?'qv-top':'tv-top');
   if(!topEl){if(onDone)onDone();return;}
@@ -852,16 +810,14 @@ function animAIPlay(who,card,onDone){
   layer.appendChild(el);el.getBoundingClientRect();
   const dx=tr.left+(tr.width-cw)/2-fr.left;
   const dy=tr.top+(tr.height-ch)/2-fr.top;
-  const rot=(Math.random()-.5)*10;
+  const rot=(Math.random()-.5)*12;
   el.style.width=`${cw}px`;el.style.height=`${ch}px`;
-  /* spring-cards with reveal: card expands to full size mid-flight */
-  el.style.transition='width 0s,height 0s,transform 0.40s cubic-bezier(.34,1.18,.64,1),opacity 0.06s 0.36s';
+  el.style.transition='width 0s, height 0s, transform 0.45s cubic-bezier(0.25, 1.1, 0.5, 1), opacity 0.1s 0.38s ease-out';
   el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
   el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},450);
+  setTimeout(()=>{el.remove();if(onDone)onDone();},480);
 }
 
-/* player plays: hand card → play pile */
 function animPlayerPlay(card){
   const fanId=MODE==='quick'?'qv-hand':'tv-hand';
   const cardEl=document.querySelector(`#${fanId} .card[data-id="${card.id}"]`);
@@ -909,7 +865,6 @@ function renderScores(){
   if(a)a.textContent=my;if(b)b.textContent=my;
 }
 
-/* QP opponent fan */
 function renderQPOppFan(){
   const fan=document.getElementById('qv-opp-fan');if(!fan)return;
   const opp=G.turnOrder.find(n=>n!=='You')||'Chidi';
@@ -932,7 +887,6 @@ function renderQPOppFan(){
   const pt=document.getElementById('qv-opp-pts');if(pt)pt.textContent=T.scores[opp]||0;
 }
 
-/* Tournament side fan */
 function renderTPSide(name){
   const seat=getSeat(name);if(!seat)return;
   const s=SEATS[seat];
@@ -976,19 +930,16 @@ function renderPlayerHand(){
   const fan=document.getElementById(fanId);if(!fan)return;
   const myHand=G.hands['You']||[];
   const ok=myTurn()&&!G.busy;
-  // Track previous card IDs to detect if this is a fresh hand (stagger) vs update (no stagger)
   const prevIds=new Set([...fan.querySelectorAll('.card')].map(c=>c.dataset.id));
   const isFreshDeal=prevIds.size===0&&myHand.length>1;
   fan.innerHTML='';
   myHand.forEach((card,idx)=>{
     const playable=ok&&canPlay(card);
     const el=document.createElement('div');
-    // fan-in stagger on fresh deal (game start), spring-in on single new card
     const isNew=!prevIds.has(String(card.id));
     const animClass=(isFreshDeal||(isNew&&myHand.length>1))?'fan-in':'';
     el.className='card ov'+(playable?' playable':(ok?' dim':''))+(animClass?' '+animClass:'');
-    // Stagger delay: 40ms per card position, so hand fans out L→R
-    if(animClass)el.style.setProperty('--stagger',`${idx*40}ms`);
+    if(animClass)el.style.setProperty('--stagger',`${idx*45}ms`);
     el.dataset.id=card.id;el.innerHTML=faceHTML(card);
     if(playable)el.addEventListener('click',()=>{if(!myTurn()||G.busy)return;animPlayerPlay(card);});
     fan.appendChild(el);
@@ -1033,7 +984,7 @@ let _tt=null;
 function showToast(msg){
   const el=document.getElementById('toast');if(!el)return;
   el.textContent=msg;el.classList.add('show');
-  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2200);
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2500);
 }
 
 function showView(){
@@ -1117,7 +1068,6 @@ function backToMenu(){
   G=null;T={round:0,scores:null,eliminated:new Set()};
 }
 
-// URL param direct launch
 (function(){const p=new URLSearchParams(window.location.search).get('mode');if(p==='quick'||p==='tournament')startGame(p);})();
 </script>
 </body>
