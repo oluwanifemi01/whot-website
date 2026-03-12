@@ -491,7 +491,11 @@ function togglePlayMenu(e) {
 function togglePlayMenu2(e) {
   e.stopPropagation();
   const menu = document.getElementById('playMenu2');
-  const chevron =ocument.addEventListener('click', () => {
+  const chevron = document.getElementById('playChevron2');
+  const open = menu.classList.toggle('open');
+  chevron.style.transform = open ? 'rotate(180deg)' : '';
+}
+document.addEventListener('click', () => {
   ['playMenu','playMenu2'].forEach(id => document.getElementById(id)?.classList.remove('open'));
   ['playChevron','playChevron2'].forEach(id => { const el = document.getElementById(id); if(el) el.style.transform=''; });
 });
