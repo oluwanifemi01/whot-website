@@ -177,31 +177,32 @@ footer{border-top:1px solid var(--border);padding:clamp(32px,4vh,52px) clamp(20p
 .play-dropdown-wrap{position:relative;display:inline-block;}
 .play-menu{
   position:absolute;top:calc(100% + 8px);left:0;
-  background:rgba(10,10,10,.98);border:1px solid var(--border);
-  min-width:220px;z-index:300;
+  background:rgba(8,8,8,.98);border:1px solid rgba(255,255,255,.1);
+  min-width:260px;z-index:300;
   overflow:hidden;
-  opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top left;
+  opacity:0;transform:translateY(-10px) scale(.97);transform-origin:top left;
   pointer-events:none;
-  transition:opacity .22s var(--ease-expo),transform .22s var(--ease-expo);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  transition:opacity .28s cubic-bezier(.16,1,.3,1),transform .28s cubic-bezier(.16,1,.3,1);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.04);
 }
 .play-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
 .play-menu-item{
-  display:flex;align-items:center;gap:12px;
-  padding:14px 18px;text-decoration:none;
-  border-bottom:1px solid var(--border);
-  transition:background .18s;
+  display:flex;align-items:center;gap:14px;
+  padding:16px 20px;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  transition:background .2s;
 }
 .play-menu-item:last-child{border-bottom:none;}
-.play-menu-item:hover{background:rgba(255,255,255,.05);}
-.play-menu-name{font-size:11px;letter-spacing:.08em;color:var(--white);margin-bottom:2px;}
-.play-menu-desc{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.play-menu-item:hover{background:rgba(255,255,255,.06);}
+.play-menu-name{font-size:12px;letter-spacing:.05em;color:var(--white);margin-bottom:3px;}
+.play-menu-desc{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);line-height:1.4;}
 
 /* ANIMATIONS */
-@keyframes riseIn{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
-.reveal{opacity:0;transform:translateY(36px);transition:opacity .75s var(--ease-expo),transform .75s var(--ease-expo);will-change:opacity,transform;}
+@keyframes riseIn{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);will-change:opacity,transform;}
 .reveal.in{opacity:1;transform:translateY(0);}
-.d1{transition-delay:.08s;}.d2{transition-delay:.16s;}.d3{transition-delay:.24s;}.d4{transition-delay:.32s;}
+.d1{transition-delay:.06s;}.d2{transition-delay:.13s;}.d3{transition-delay:.2s;}.d4{transition-delay:.27s;}
 
 /* RESPONSIVE */
 @media(max-width:760px){
@@ -474,11 +475,11 @@ footer{border-top:1px solid var(--border);padding:clamp(32px,4vh,52px) clamp(20p
 </section>
 
 <footer>
-  <div><div class="footer-logo">Whot</div><div class="footer-copy">Nigerian Edition · © 2025</div></div>
-  <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="mailto:hello@whotgame.app">Contact</a></div>
+  <div><div class="footer-logo"><a href="index.html" style="color:inherit;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">Whot</a></div><div class="footer-copy">Nigerian Edition · © 2025</div></div>
+  <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="/cdn-cgi/l/email-protection#741c1118181b34031c1b00131519115a150404">Contact</a></div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── Play dropdown ──
 function togglePlayMenu(e) {
   e.stopPropagation();
@@ -532,8 +533,4 @@ function copyCode() {
   }).catch(()=>{});
 }
 
-if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)
-  document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
-</script>
-</body>
-</html>
+if(window.matchMedia
