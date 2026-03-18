@@ -25,6 +25,7 @@
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   font-family:'DM Mono',monospace;-webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
   touch-action:manipulation;user-select:none;overscroll-behavior:none}
 
 /* ── MODE SELECT ── */
@@ -160,10 +161,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 
 #qv-player{flex:0 0 auto;padding:2px clamp(12px,3vw,24px) clamp(8px,2vh,14px);display:flex;flex-direction:column;gap:4px;}
 #qv-hand{
-  display:flex;align-items:flex-end;justify-content:center;
-  overflow-x:auto;overflow-y:visible;scrollbar-width:none;padding:8px 4px 2px;
+  display:flex;align-items:flex-end;justify-content:flex-start;
+  overflow-x:auto;overflow-y:visible;scrollbar-width:none;
+  /* Side padding acts as minimum edge gap; ::before/::after spacers center cards when few */
+  padding:8px 20px 2px;
+  /* Allow horizontal pan for card scrolling, tap still works */
+  touch-action:pan-x;
+  -webkit-overflow-scrolling:touch;
+  scroll-padding-inline:20px;
 }
 #qv-hand::-webkit-scrollbar{display:none;}
+/* Centering spacers: flex:1 fills space when cards fit → centered.
+   When cards overflow they shrink to 0 → scroll starts from left edge (correct). */
+#qv-hand::before,#qv-hand::after{content:'';flex:1 0 0;min-width:0;pointer-events:none;}
 
 /* ── TOURNAMENT ── */
 #tv{overflow:hidden;}
@@ -207,8 +217,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   display:flex;align-items:center;justify-content:center;
   gap:clamp(14px,2.5vw,32px);z-index:10;
 }
-#tv-hand{display:flex;align-items:flex-end;justify-content:center;overflow-x:auto;overflow-y:visible;scrollbar-width:none;padding:6px 4px 2px;}
+#tv-hand{
+  display:flex;align-items:flex-end;justify-content:flex-start;
+  overflow-x:auto;overflow-y:visible;scrollbar-width:none;
+  padding:6px 20px 2px;
+  touch-action:pan-x;
+  -webkit-overflow-scrolling:touch;
+  scroll-padding-inline:20px;
+}
 #tv-hand::-webkit-scrollbar{display:none;}
+#tv-hand::before,#tv-hand::after{content:'';flex:1 0 0;min-width:0;pointer-events:none;}
 #tv-player-row{width:100%;padding:2px clamp(12px,3vw,24px);display:flex;align-items:center;justify-content:space-between;}
 
 /* ── BADGES ── */
@@ -229,16 +247,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   position:relative;flex-shrink:0;
   box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.7);
-  transition:transform .28s var(--spring-cards),box-shadow .28s ease,margin .28s var(--spring-cards);
+  /* Use translate3d for GPU compositing; separate properties for perf */
+  transition:transform .26s var(--spring-cards),box-shadow .26s ease,margin .26s var(--spring-cards);
   cursor:default;overflow:hidden;
+  /* GPU layer hint — only on cards that animate */
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
 }
 .cback{
   background:var(--br);border-color:var(--brl);cursor:pointer;
-  transition:transform .2s var(--spring),box-shadow .2s;
+  transition:transform .18s var(--spring),box-shadow .18s;
   box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
 }
-.cback:hover{transform:scale(1.04) translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15);}
-.cback:active{transform:scale(.98) translateY(0);}
+.cback:hover{transform:scale(1.04) translate3d(0,-3px,0);box-shadow:0 10px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15);}
+.cback:active{transform:scale(.98) translate3d(0,0,0);}
+/* Touch-friendly tap active state */
+@media (hover:none){
+  .cback:active{transform:scale(.96) translate3d(0,0,0);transition-duration:.1s;}
+}
 .cback-inner{
   width:calc(var(--cw) - 14px);height:calc(var(--ch) - 14px);
   border:1px solid rgba(255,255,255,.14);border-radius:3px;
@@ -248,17 +273,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .cbl{font-family:'Playfair Display',serif;font-weight:900;font-size:9px;color:rgba(255,255,255,.18);}
 .card.playable{
   box-shadow:0 0 0 2px var(--br),0 6px 22px rgba(107,58,42,.45),inset 0 1px 0 rgba(255,255,255,.7);
-  transform:translateY(-7px);cursor:pointer;
+  transform:translate3d(0,-7px,0);cursor:pointer;
+  will-change:transform;
 }
-.card.playable:hover{
-  transform:translateY(-14px) scale(1.04);
-  box-shadow:0 0 0 2.5px var(--brl),0 18px 40px rgba(107,58,42,.6),inset 0 1px 0 rgba(255,255,255,.8);
+/* Only show hover lift on pointer devices — on touch, tap is the interaction */
+@media (hover:hover){
+  .card.playable:hover{
+    transform:translate3d(0,-14px,0) scale(1.04);
+    box-shadow:0 0 0 2.5px var(--brl),0 18px 40px rgba(107,58,42,.6),inset 0 1px 0 rgba(255,255,255,.8);
+  }
 }
-.card.playable:active{transform:translateY(-9px) scale(0.98);}
+.card.playable:active{transform:translate3d(0,-9px,0) scale(0.97);transition-duration:.1s;}
 .card.dim{opacity:.32;cursor:not-allowed;filter:grayscale(.2);}
 .card.ov{margin-right:clamp(-28px,-4vw,-16px);}
 .card.ov:last-child{margin-right:0;}
-.card.ov.playable:hover{z-index:20;margin-right:clamp(-12px,-1.5vw,-2px);}
+@media (hover:hover){
+  .card.ov.playable:hover{z-index:20;margin-right:clamp(-12px,-1.5vw,-2px);}
+}
 .cc{
   position:absolute;font-family:'Playfair Display',serif;font-weight:900;
   color:var(--br);font-size:clamp(8px,1vw,11px);line-height:1;
@@ -421,31 +452,103 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
 .toast-dot{width:5px;height:5px;border-radius:50%;background:var(--brl);flex-shrink:0;}
 
 /* ── ANIMATIONS ── */
+/* Use translate3d throughout — avoids layout reflow, goes to GPU compositor */
 @keyframes popIn{
-  from{opacity:0;transform:scale(.9) translateY(12px);}
-  to{opacity:1;transform:scale(1) translateY(0);}
+  0%{opacity:0;transform:scale(.92) translate3d(0,14px,0);}
+  60%{opacity:1;}
+  100%{opacity:1;transform:scale(1) translate3d(0,0,0);}
 }
 @keyframes activePulse{
   0%,100%{opacity:1;text-shadow:0 0 4px rgba(255,255,255,.1);}
-  50%{opacity:.6;text-shadow:0 0 14px rgba(255,255,255,.55);}
+  50%{opacity:.58;text-shadow:0 0 16px rgba(255,255,255,.5);}
 }
-.pname.active,.tz-name.active{animation:activePulse 2.2s ease-in-out infinite;}
+.pname.active,.tz-name.active{animation:activePulse 2.4s ease-in-out infinite;}
+
 @keyframes cardFanIn{
-  0%{opacity:0;transform:translateY(32px) rotate(6deg) scale(.88);}
-  100%{opacity:1;transform:translateY(0) rotate(0) scale(1);}
+  0%  {opacity:0;transform:translate3d(0,28px,0) rotate(5deg) scale(.9);}
+  40% {opacity:1;}
+  70% {transform:translate3d(0,-4px,0) rotate(-1deg) scale(1.01);}
+  100%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1);}
 }
-.card.fan-in{animation:cardFanIn .45s var(--spring-cards) both;animation-delay:var(--stagger,0ms);}
+.card.fan-in{
+  animation:cardFanIn .42s var(--spring-cards) both;
+  animation-delay:var(--stagger,0ms);
+  will-change:transform,opacity;
+}
+
 @keyframes cardPop{
-  0%{transform:scale(.82) translateY(8px);}
-  55%{transform:scale(1.09) translateY(-5px);}
-  100%{transform:scale(1) translateY(0);}
+  0%  {transform:translate3d(0,10px,0) scale(.84);}
+  45% {transform:translate3d(0,-6px,0) scale(1.1);}
+  72% {transform:translate3d(0,2px,0) scale(.98);}
+  100%{transform:translate3d(0,0,0) scale(1);}
 }
-.card.just-drawn{animation:cardPop .38s var(--spring-cards) both;}
+.card.just-drawn{animation:cardPop .36s cubic-bezier(0.22,1,0.36,1) both;will-change:transform;}
+
+@keyframes statusPulse{
+  0%,100%{transform:scale(1);opacity:.7;}
+  50%{transform:scale(1.6);opacity:1;}
+}
 
 /* ── RESPONSIVE ── */
-@media(max-width:390px){:root{--cw:62px;--ch:93px;--scw:26px;--sch:40px;}}
+@media(max-width:390px){:root{--cw:60px;--ch:90px;--scw:24px;--sch:36px;}}
 @media(min-width:768px){:root{--cw:78px;--ch:117px;}}
-@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;}}
+
+/* ── LANDSCAPE PHONE (height ≤ 500px) ── */
+@media(orientation:landscape)and(max-height:500px){
+  :root{--cw:52px;--ch:78px;--scw:22px;--sch:33px;}
+
+  /* Slim topbar */
+  #topbar{height:40px;}
+  .tb-logo{font-size:15px;}
+  .tb-mode{font-size:7px;padding:2px 6px;}
+  .tb-rnd{font-size:8px;}
+  .gview{top:calc(40px + env(safe-area-inset-top,0px));}
+
+  /* Quick Play: compress vertical zones */
+  #qv-opp{padding:3px clamp(10px,2vw,18px) 2px;gap:2px;}
+  #qv-opp-fan{height:clamp(28px,7vw,38px);}
+  #qv-center{gap:clamp(10px,2vw,22px);padding:2px clamp(10px,2vw,18px);}
+  #qv-status{height:20px;font-size:8px;letter-spacing:.12em;}
+  #qv-player{padding:1px clamp(10px,2vw,18px) clamp(3px,1vh,6px);gap:2px;}
+  .pile-l{font-size:6px;letter-spacing:.18em;}
+  .pile-n{font-size:7px;padding:1px 5px;}
+  .pname{font-size:7px;letter-spacing:.2em;}
+  .pcnt-n,.ppts{font-size:13px;}
+
+  /* Suit picker: horizontal layout */
+  .sp-grid{gap:8px;width:min(420px,88vw);}
+  .sp-btn{aspect-ratio:unset;padding:10px 6px;}
+  .sp-title{font-size:clamp(18px,3vw,26px);}
+  #suit-picker{gap:clamp(10px,2vh,18px);}
+
+  /* Tournament: compress side zones */
+  .fan-v{height:clamp(60px,14vw,90px);}
+  #tz-bot{bottom:2px;}
+  #tv-player-row{padding:1px clamp(10px,2vw,18px);}
+  #tv-hand{padding:4px 16px 1px;}
+
+  /* Game over: compact */
+  #game-over{gap:clamp(6px,1.5vh,12px);padding:clamp(12px,3vw,28px);}
+  .go-r{font-size:clamp(32px,7vw,56px);}
+  .go-sv{font-size:clamp(20px,4vw,32px);}
+  .btn-p,.btn-g{padding:9px 20px;}
+
+  /* Mode screen: horizontal layout */
+  #mode-screen{flex-direction:column;gap:clamp(6px,1.5vh,14px);padding:clamp(12px,3vw,24px);}
+  .ms-logo{font-size:clamp(36px,8vw,58px);}
+  .ms-eyebrow{margin-bottom:0;}
+  .ms-cards{gap:7px;max-width:480px;}
+  .ms-card{padding:clamp(10px,1.8vh,16px) clamp(14px,2vw,22px);}
+}
+
+/* ── VERY SMALL PORTRAIT (iPhone SE etc.) ── */
+@media(max-width:360px)and(max-height:700px){
+  :root{--cw:58px;--ch:87px;--scw:22px;--sch:33px;}
+  #qv-center{gap:14px;}
+  .pile-l{display:none;}
+}
+
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;transition-property:none !important;}}
 </style>
 </head>
 <body>
@@ -859,17 +962,25 @@ function flyIt(fromRect,toRect,html,isBack,onDone){
   const cw=cssv('--cw')||70,ch=cssv('--ch')||105;
   const el=document.createElement('div');
   el.className='fly '+(isBack?'back':'face');
-  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;transition:none;border-radius:8px;`;
+  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;`+
+    `width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;`+
+    `transition:none;border-radius:8px;`+
+    `backface-visibility:hidden;-webkit-backface-visibility:hidden;`;
   if(html)el.innerHTML=html;
   layer.appendChild(el);
-  el.getBoundingClientRect();
-  const dx=toRect.left+(toRect.width-(fromRect.width||cw))/2-fromRect.left;
-  const dy=toRect.top+(toRect.height-(fromRect.height||ch))/2-fromRect.top;
-  const rot=(Math.random()-.5)*12;
-  el.style.transition='transform 0.42s cubic-bezier(0.25,1.1,0.5,1),opacity 0.1s 0.35s ease-out';
-  el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
-  el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},450);
+  // Two-frame flush: first rAF queues paint, second confirms composite layer exists
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const dx=toRect.left+(toRect.width-(fromRect.width||cw))/2-fromRect.left;
+    const dy=toRect.top+(toRect.height-(fromRect.height||ch))/2-fromRect.top;
+    const rot=(Math.random()-.5)*10;
+    // translate3d → GPU compositor path, no layout reflow
+    el.style.transition=
+      'transform 0.40s cubic-bezier(0.22,1,0.36,1),'+
+      'opacity 0.08s 0.34s linear';
+    el.style.transform=`translate3d(${dx}px,${dy}px,0) rotate(${rot}deg)`;
+    el.style.opacity='0';
+    setTimeout(()=>{el.remove();if(onDone)onDone();},420);
+  }));
 }
 
 function animateDeal(names,dealt,onDone){
@@ -979,10 +1090,13 @@ function animAIPlay(who,card,onDone){
   const dy=tr.top+(tr.height-ch)/2-fr.top;
   const rot=(Math.random()-.5)*12;
   el.style.width=`${cw}px`;el.style.height=`${ch}px`;
-  el.style.transition='width 0s,height 0s,transform 0.45s cubic-bezier(0.25,1.1,0.5,1),opacity 0.1s 0.38s ease-out';
-  el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
+  el.style.backfaceVisibility='hidden';
+  el.style.transition='width 0s,height 0s,'+
+    'transform 0.40s cubic-bezier(0.22,1,0.36,1),'+
+    'opacity 0.08s 0.34s linear';
+  el.style.transform=`translate3d(${dx}px,${dy}px,0) rotate(${rot}deg)`;
   el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},480);
+  setTimeout(()=>{el.remove();if(onDone)onDone();},440);
 }
 
 function animPlayerPlay(card){
