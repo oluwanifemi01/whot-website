@@ -11,588 +11,334 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --black:#050505;--bg:#080808;--s1:#0d0d0d;--s2:#111;--s3:#161616;
+  --black:#050505;--bg:#080808;--s1:#0d0d0d;--s2:#111;
   --bdr:rgba(255,255,255,.07);--bdr2:rgba(255,255,255,.13);
   --cream:#F0EDE6;--cdim:#C8B89A;
-  --br:#6B3A2A;--brl:#8B5040;--brd:#4A2418;
-  --mut:#555;--mut-l:#777;--wht:#fff;--red:#C0392B;
-  --expo:cubic-bezier(0.16, 1, 0.3, 1);
-  --spring:cubic-bezier(0.34, 1.56, 0.64, 1);
-  --spring-cards:cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --spring-heavy:cubic-bezier(0.25, 1.1, 0.5, 1);
+  --br:#6B3A2A;--brl:#8B5040;
+  --mut:#555;--wht:#fff;--red:#C0392B;
+  --expo:cubic-bezier(.16,1,.3,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --spring-cards:cubic-bezier(.22,1,.36,1);
+  --spring-heavy:cubic-bezier(.22,1,.36,1);
   --cw:70px;--ch:105px;
   --scw:32px;--sch:48px;
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
   font-family:'DM Mono',monospace;-webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
   touch-action:manipulation;user-select:none;overscroll-behavior:none}
 
-/* ── MODE SELECT ── */
-#mode-screen{
-  position:fixed;inset:0;z-index:900;background:var(--black);
+/* MODE SELECT */
+#mode-screen{position:fixed;inset:0;z-index:900;background:var(--black);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:clamp(10px,2.5vh,22px);padding:clamp(20px,4vw,48px);text-align:center;
-}
-/* Subtle noise texture on mode screen */
-#mode-screen::before{
-  content:'';position:absolute;inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  background-size:256px;pointer-events:none;
-}
-/* Radial glow behind logo */
-#mode-screen::after{
-  content:'';position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-60%);
-  width:min(500px,80vw);height:min(500px,80vw);
-  background:radial-gradient(ellipse,rgba(107,58,42,.08) 0%,transparent 65%);
-  pointer-events:none;
-}
-.ms-logo{
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(48px,11vw,88px);line-height:.88;letter-spacing:-.04em;
-  color:var(--wht);margin-bottom:2px;
-  position:relative;z-index:1;
-  animation:logoRise .9s cubic-bezier(0.16,1,0.3,1) both;
-}
-.ms-logo span{display:block;transform:rotate(180deg);background:linear-gradient(to bottom,rgba(255,255,255,.18),transparent);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-.ms-eyebrow{
-  font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--brl);
-  margin-bottom:clamp(16px,3vh,28px);position:relative;z-index:1;
-  display:flex;align-items:center;gap:10px;
-  animation:logoRise .8s .1s cubic-bezier(0.16,1,0.3,1) both;
-}
-.ms-eyebrow::before,.ms-eyebrow::after{content:'';display:inline-block;width:20px;height:1px;background:currentColor;opacity:.35;}
-.ms-label{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;position:relative;z-index:1;}
-.ms-cards{display:flex;flex-direction:column;gap:9px;width:100%;max-width:370px;position:relative;z-index:1;}
-.ms-card{
-  border:1px solid var(--bdr2);background:var(--s1);
+  gap:clamp(10px,2.5vh,22px);padding:clamp(20px,4vw,48px);text-align:center;}
+.ms-logo{font-family:'Playfair Display',serif;font-weight:900;
+  font-size:clamp(48px,11vw,88px);line-height:.88;letter-spacing:-.04em;color:var(--wht);margin-bottom:2px;}
+.ms-logo span{display:block;transform:rotate(180deg);}
+.ms-eyebrow{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--brl);margin-bottom:clamp(16px,3vh,28px);}
+.ms-label{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);margin-bottom:6px;}
+.ms-cards{display:flex;flex-direction:column;gap:9px;width:100%;max-width:370px;}
+.ms-card{border:1px solid var(--bdr2);background:var(--s1);
   padding:clamp(16px,2.5vh,24px) clamp(18px,3vw,28px);
   display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;
-  transition:background .2s,border-color .25s var(--expo),transform .3s var(--spring),box-shadow .25s;
-  position:relative;overflow:hidden;
-}
-.ms-card::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
-  background:var(--br);transform:scaleY(0);transform-origin:bottom;
-  transition:transform .35s var(--expo);
-}
-.ms-card:hover{background:var(--s2);border-color:rgba(107,58,42,.4);transform:translateY(-3px) scale(1.01);box-shadow:0 12px 32px rgba(0,0,0,.5),0 0 0 1px rgba(107,58,42,.15);}
-.ms-card:hover::before{transform:scaleY(1);}
-.ms-card:active{transform:translateY(0) scale(0.99);box-shadow:none;}
-.ms-icon{width:36px;height:36px;flex-shrink:0;opacity:.7;transition:opacity .2s,transform .3s var(--spring);}
-.ms-card:hover .ms-icon{opacity:1;transform:scale(1.1);}
+  transition:background .18s,border-color .2s,transform .22s var(--spring);}
+.ms-card:hover{background:var(--s2);border-color:var(--br);transform:translateY(-2px);}
+.ms-card:active{transform:translateY(0);}
+.ms-icon{width:36px;height:36px;flex-shrink:0;opacity:.7;}
 .ms-name{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(15px,2.2vw,19px);color:var(--wht);margin-bottom:3px;}
 .ms-desc{font-size:9px;letter-spacing:.06em;color:var(--mut);line-height:1.5;}
-.ms-arr{width:13px;height:13px;flex-shrink:0;opacity:.2;margin-left:auto;transition:transform .3s var(--spring), opacity .3s;}
-.ms-card:hover .ms-arr{transform:translateX(4px);opacity:.85;}
-.ms-back{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-decoration:none;margin-top:6px;transition:color .2s;position:relative;z-index:1;display:flex;align-items:center;gap:5px;}
-.ms-back::before{content:'←';transition:transform .2s var(--spring);}
+.ms-arr{width:13px;height:13px;flex-shrink:0;opacity:.22;margin-left:auto;}
+.ms-back{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-decoration:none;margin-top:6px;transition:color .2s;}
 .ms-back:hover{color:var(--wht);}
-.ms-back:hover::before{transform:translateX(-3px);}
-@keyframes logoRise{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-/* ── TOP BAR ── */
-#topbar{
-  position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;z-index:200;
-  height:52px;display:flex;align-items:center;justify-content:space-between;
+/* TOP BAR — glassmorphism upgrade */
+#topbar{position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;z-index:200;
+  height:50px;display:flex;align-items:center;justify-content:space-between;
   padding:0 clamp(12px,3vw,26px);
-  background:rgba(5,5,5,.78);
-  backdrop-filter:blur(32px) saturate(170%);-webkit-backdrop-filter:blur(32px) saturate(170%);
-  border-bottom:1px solid rgba(255,255,255,.09);
-  box-shadow:0 1px 0 rgba(255,255,255,.04),0 4px 24px rgba(0,0,0,.4);
-}
-.tb-l{display:flex;align-items:center;gap:10px;}
-.tb-back{
-  display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.14em;
+  background:rgba(5,5,5,.72);
+  backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.1);
+  box-shadow:0 1px 0 rgba(255,255,255,.04),0 4px 24px rgba(0,0,0,.35);}
+.tb-l{display:flex;align-items:center;gap:12px;}
+.tb-back{display:flex;align-items:center;gap:5px;font-size:9px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--mut);cursor:pointer;transition:color .2s;
-  background:none;border:none;font-family:'DM Mono',monospace;padding:6px 8px;
-  border-radius:2px;transition:color .2s, background .2s;
-}
-.tb-back:hover{color:var(--wht);background:rgba(255,255,255,.05);}
+  background:none;border:none;font-family:'DM Mono',monospace;}
+.tb-back:hover{color:var(--wht);}
 .tb-sep{width:1px;height:14px;background:var(--bdr2);}
-.tb-mode{
-  font-size:8px;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--br);background:rgba(107,58,42,.12);
-  padding:3px 8px;border-radius:2px;border:1px solid rgba(107,58,42,.2);
-}
-.tb-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--wht);letter-spacing:-.025em;transition:opacity .2s;text-decoration:none;}
-.tb-logo:hover{opacity:.7;}
-.tb-rnd-wrap{display:flex;align-items:center;gap:6px;}
+.tb-mode{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--br);}
+.tb-logo{font-family:'Playfair Display',serif;font-weight:900;font-size:17px;color:var(--wht);letter-spacing:-.025em;}
 .tb-rnd{font-size:9px;letter-spacing:.1em;color:var(--mut);}
-.tb-rnd b{color:var(--wht);font-weight:400;font-family:'Playfair Display',serif;font-size:13px;}
+.tb-rnd b{color:var(--wht);font-weight:400;}
 
-/* ── VIEWS ── */
-.gview{
-  position:fixed;top:calc(52px + env(safe-area-inset-top,0px));
-  left:0;right:0;bottom:env(safe-area-inset-bottom,0px);display:none;
-}
+/* VIEWS */
+.gview{position:fixed;top:calc(50px + env(safe-area-inset-top,0px));
+  left:0;right:0;bottom:env(safe-area-inset-bottom,0px);display:none;}
 .gview.on{display:flex;}
 
-/* ── QUICK PLAY ── */
+/* ── QUICK PLAY layout ── */
 #qv{flex-direction:column;}
 #qv-opp{flex:0 0 auto;padding:clamp(8px,1.5vh,12px) clamp(12px,3vw,24px) 4px;display:flex;flex-direction:column;gap:4px;}
 #qv-opp-fan{height:clamp(44px,6.5vh,60px);position:relative;overflow:visible;}
-#qv-center{
-  flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;
-  gap:clamp(16px,3.5vw,40px);padding:4px clamp(12px,3vw,24px);position:relative;
-}
-/* Subtle vignette on center table area */
-#qv-center::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at center,transparent 40%,rgba(5,5,5,.15) 100%);
-  pointer-events:none;z-index:0;
-}
-#qv-status{
-  flex:0 0 auto;height:28px;display:flex;align-items:center;justify-content:center;
-  gap:6px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--mut);transition:color .3s;
-}
-#qv-status.yours{color:var(--wht);}
-#qv-status.warn{color:var(--brl);}
-/* Turn indicator dot */
-#qv-status::before{
-  content:'';width:5px;height:5px;border-radius:50%;background:currentColor;
-  flex-shrink:0;opacity:.5;transition:background .3s,opacity .3s;
-}
-#qv-status.yours::before{opacity:1;animation:statusPulse 1.8s ease-in-out infinite;}
-#qv-status.warn::before{opacity:1;}
-@keyframes statusPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.5);}}
-
+#qv-center{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;
+  gap:clamp(16px,3.5vw,40px);padding:4px clamp(12px,3vw,24px);position:relative;}
+#qv-status{flex:0 0 auto;height:26px;display:flex;align-items:center;justify-content:center;
+  font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
+#qv-status.yours{color:var(--wht);}#qv-status.warn{color:var(--brl);}
 #qv-player{flex:0 0 auto;padding:2px clamp(12px,3vw,24px) clamp(8px,2vh,14px);display:flex;flex-direction:column;gap:4px;}
-#qv-hand{
-  display:flex;align-items:flex-end;justify-content:flex-start;
-  overflow-x:auto;overflow-y:visible;scrollbar-width:none;
-  /* Side padding acts as minimum edge gap; ::before/::after spacers center cards when few */
-  padding:8px 20px 2px;
-  /* Allow horizontal pan for card scrolling, tap still works */
-  touch-action:pan-x;
-  -webkit-overflow-scrolling:touch;
-  scroll-padding-inline:20px;
-}
+#qv-hand{display:flex;align-items:flex-end;justify-content:center;overflow-x:auto;overflow-y:visible;
+  scrollbar-width:none;padding:8px 4px 2px;}
 #qv-hand::-webkit-scrollbar{display:none;}
-/* Centering spacers: flex:1 fills space when cards fit → centered.
-   When cards overflow they shrink to 0 → scroll starts from left edge (correct). */
-#qv-hand::before,#qv-hand::after{content:'';flex:1 0 0;min-width:0;pointer-events:none;}
 
-/* ── TOURNAMENT ── */
+/* ── TOURNAMENT layout: absolute 4-sided ── */
+/* FIX: removed position:relative so .gview's position:fixed applies naturally.
+   ID selector (1,0,0) was previously overriding .gview class (0,1,0) position:fixed.
+   overflow:hidden stays for card-fly clipping. */
 #tv{overflow:hidden;}
-#tv-status{
-  position:absolute;bottom:calc(var(--ch) + 28px);
+
+/* tournament status overlay */
+#tv-status{position:absolute;bottom:calc(var(--ch) + 28px);
   left:50%;transform:translateX(-50%);
   font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--mut);white-space:nowrap;z-index:15;transition:color .3s;
-  display:flex;align-items:center;gap:5px;
-}
-#tv-status.yours{color:var(--wht);}
-#tv-status.warn{color:var(--brl);}
-#tv-status::before{
-  content:'';width:4px;height:4px;border-radius:50%;background:currentColor;
-  flex-shrink:0;opacity:.5;transition:background .3s;
-}
-#tv-status.yours::before{opacity:1;animation:statusPulse 1.8s ease-in-out infinite;}
-.tz{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;z-index:5;transition:opacity .4s ease;}
+  color:var(--mut);white-space:nowrap;z-index:15;}
+#tv-status.yours{color:var(--wht);}#tv-status.warn{color:var(--brl);}
+
+/* side zones */
+.tz{position:absolute;display:flex;flex-direction:column;align-items:center;gap:3px;z-index:5;}
 #tz-top{top:4px;left:0;right:0;align-items:center;}
 #tz-bot{bottom:4px;left:0;right:0;align-items:center;}
 #tz-left{top:0;bottom:0;left:4px;flex-direction:row;align-items:center;}
 #tz-right{top:0;bottom:0;right:4px;flex-direction:row-reverse;align-items:center;}
-.tz.elim{opacity:.2;}
+.tz.elim{opacity:.3;}
 .tz-info{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 #tz-left .tz-info,#tz-right .tz-info{flex-direction:column;align-items:flex-start;gap:1px;}
-.tz-name{
-  font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);
-  transition:color .3s,opacity .3s;font-weight:500;
-}
+.tz-name{font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);
+  transition:color .3s,opacity .3s;font-weight:500;}
 .tz-name.active{color:var(--wht);}
 .tz-pts{font-family:'Playfair Display',serif;font-weight:900;font-size:10px;color:var(--wht);letter-spacing:-.01em;}
 .tz-l{font-size:7px;color:var(--mut);letter-spacing:.04em;}
 .fan-h{position:relative;height:clamp(34px,5vh,48px);min-width:60px;overflow:visible;}
 .fan-v{position:relative;width:clamp(28px,4vw,38px);height:clamp(90px,16vh,140px);overflow:visible;}
-.sback{position:absolute;background:var(--br);border:1px solid var(--brl);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.sback{position:absolute;background:var(--br);border:1px solid var(--brl);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.6);}
 .sback-h{width:var(--scw);height:var(--sch);}
 .sback-v{width:var(--scw);height:var(--sch);}
 
-.ctable{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+/* center table */
+.ctable{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   display:flex;align-items:center;justify-content:center;
-  gap:clamp(14px,2.5vw,32px);z-index:10;
-}
-#tv-hand{
-  display:flex;align-items:flex-end;justify-content:flex-start;
-  overflow-x:auto;overflow-y:visible;scrollbar-width:none;
-  padding:6px 20px 2px;
-  touch-action:pan-x;
-  -webkit-overflow-scrolling:touch;
-  scroll-padding-inline:20px;
-}
+  gap:clamp(14px,2.5vw,32px);z-index:10;}
+
+/* tournament player (bottom) hand */
+#tv-hand{display:flex;align-items:flex-end;justify-content:center;
+  overflow-x:auto;overflow-y:visible;scrollbar-width:none;padding:6px 4px 2px;}
 #tv-hand::-webkit-scrollbar{display:none;}
-#tv-hand::before,#tv-hand::after{content:'';flex:1 0 0;min-width:0;pointer-events:none;}
 #tv-player-row{width:100%;padding:2px clamp(12px,3vw,24px);display:flex;align-items:center;justify-content:space-between;}
 
-/* ── BADGES ── */
-.tbadge,.cbadge{
-  position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
-  padding:5px 16px;border-radius:3px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  opacity:0;transition:opacity .3s var(--expo),transform .3s var(--expo);
-  pointer-events:none;white-space:nowrap;z-index:25;
-}
-.tbadge{color:var(--mut-l);border:1px solid rgba(255,255,255,.1);background:rgba(8,8,8,.88);box-shadow:0 4px 16px rgba(0,0,0,.5);transform:translateX(-50%) translateY(4px);}
-.cbadge{color:var(--brl);border:1px solid rgba(107,58,42,.4);background:rgba(8,8,8,.88);box-shadow:0 4px 16px rgba(107,58,42,.25);transform:translateX(-50%) translateY(-4px);}
-.tbadge.on,.cbadge.on{opacity:1;transform:translateX(-50%) translateY(0);}
+/* shared think/called badges — glassmorphism overlays */
+.tbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mut);padding:4px 14px;border:1px solid rgba(255,255,255,.1);border-radius:2px;
+  background:rgba(8,8,8,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);}
+.tbadge.on{opacity:1;}
+.cbadge{position:absolute;font-size:8px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brl);padding:4px 14px;border:1px solid rgba(107,58,42,.4);border-radius:2px;
+  background:rgba(8,8,8,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:25;
+  box-shadow:0 2px 12px rgba(107,58,42,.2);}
+.cbadge.on{opacity:1;}
 
-/* ── SHARED CARD ── */
-.card{
-  width:var(--cw);height:var(--ch);
-  background:var(--cream);border:1.5px solid var(--cdim);
+/* SHARED CARD — 8px grid radius, inset highlight for tactile depth */
+.card{width:var(--cw);height:var(--ch);background:var(--cream);border:1.5px solid var(--cdim);
   border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
   position:relative;flex-shrink:0;
-  box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.7);
-  /* Use translate3d for GPU compositing; separate properties for perf */
-  transition:transform .26s var(--spring-cards),box-shadow .26s ease,margin .26s var(--spring-cards);
-  cursor:default;overflow:hidden;
-  /* GPU layer hint — only on cards that animate */
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
-}
-.cback{
-  background:var(--br);border-color:var(--brl);cursor:pointer;
-  transition:transform .18s var(--spring),box-shadow .18s;
-  box-shadow:0 4px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12);
-}
-.cback:hover{transform:scale(1.04) translate3d(0,-3px,0);box-shadow:0 10px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.15);}
-.cback:active{transform:scale(.98) translate3d(0,0,0);}
-/* Touch-friendly tap active state */
-@media (hover:none){
-  .cback:active{transform:scale(.96) translate3d(0,0,0);transition-duration:.1s;}
-}
-.cback-inner{
-  width:calc(var(--cw) - 14px);height:calc(var(--ch) - 14px);
-  border:1px solid rgba(255,255,255,.14);border-radius:3px;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.08);
-}
-.cbl{font-family:'Playfair Display',serif;font-weight:900;font-size:9px;color:rgba(255,255,255,.18);}
+  box-shadow:0 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .18s var(--spring-cards),box-shadow .18s;cursor:default;overflow:hidden;}
+.cback{background:var(--br);border-color:var(--brl);cursor:pointer;}
+.cback:hover{transform:scale(1.04);}.cback:active{transform:scale(.98);}
+.cback-inner{width:calc(var(--cw) - 14px);height:calc(var(--ch) - 14px);
+  border:1px solid rgba(255,255,255,.1);border-radius:3px;
+  display:flex;align-items:center;justify-content:center;}
+.cbl{font-family:'Playfair Display',serif;font-weight:900;font-size:9px;color:rgba(255,255,255,.14);}
 .card.playable{
-  box-shadow:0 0 0 2px var(--br),0 6px 22px rgba(107,58,42,.45),inset 0 1px 0 rgba(255,255,255,.7);
-  transform:translate3d(0,-7px,0);cursor:pointer;
-  will-change:transform;
-}
-/* Only show hover lift on pointer devices — on touch, tap is the interaction */
-@media (hover:hover){
-  .card.playable:hover{
-    transform:translate3d(0,-14px,0) scale(1.04);
-    box-shadow:0 0 0 2.5px var(--brl),0 18px 40px rgba(107,58,42,.6),inset 0 1px 0 rgba(255,255,255,.8);
-  }
-}
-.card.playable:active{transform:translate3d(0,-9px,0) scale(0.97);transition-duration:.1s;}
-.card.dim{opacity:.32;cursor:not-allowed;filter:grayscale(.2);}
+  box-shadow:0 0 0 2px var(--br),0 8px 28px rgba(107,58,42,.55),inset 0 1px 0 rgba(255,255,255,.18);
+  transform:translateY(-8px);cursor:pointer;}
+.card.playable:hover{
+  transform:translateY(-14px);
+  box-shadow:0 0 0 2px var(--brl),0 16px 36px rgba(107,58,42,.65),inset 0 1px 0 rgba(255,255,255,.2);}
+.card.playable:active{transform:translateY(-10px);}
+.card.dim{opacity:.32;cursor:not-allowed;}
 .card.ov{margin-right:clamp(-28px,-4vw,-16px);}
 .card.ov:last-child{margin-right:0;}
-@media (hover:hover){
-  .card.ov.playable:hover{z-index:20;margin-right:clamp(-12px,-1.5vw,-2px);}
-}
-.cc{
-  position:absolute;font-family:'Playfair Display',serif;font-weight:900;
+.card.ov.playable:hover{z-index:20;margin-right:clamp(-14px,-2vw,-4px);}
+.cc{position:absolute;font-family:'Playfair Display',serif;font-weight:900;
   color:var(--br);font-size:clamp(8px,1vw,11px);line-height:1;
-  display:flex;flex-direction:column;align-items:center;gap:1px;
-}
+  display:flex;flex-direction:column;align-items:center;gap:1px;}
 .cc.tl{top:5px;left:6px;}.cc.br{bottom:5px;right:6px;transform:rotate(180deg);}
 
-/* ── PILE WIDGET ── */
-.pile-w{display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:1;}
+/* PILE */
+.pile-w{display:flex;flex-direction:column;align-items:center;gap:5px;}
 .pile-l{font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);}
-.pile-n{
-  font-size:8px;color:var(--mut);transition:color .2s;
-  background:var(--s1);border:1px solid var(--bdr);
-  padding:2px 7px;border-radius:10px;
-  min-width:28px;text-align:center;
-}
+.pile-n{font-size:8px;color:var(--mut);}
 
-/* ── PLAYER INFO ── */
+/* PLAYER INFO ROWS — tightened for high-tier gaming app feel */
 .pbar{display:flex;align-items:center;justify-content:space-between;}
-.pname{
-  font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);
-  transition:color .3s,opacity .3s;font-weight:500;
-}
+.pname{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);
+  transition:color .3s,opacity .3s;font-weight:500;}
 .pname.active{color:var(--wht);}
 .pcnt{display:flex;align-items:baseline;gap:3px;}
-.pcnt-n,.ppts{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
-.pcnt-l,.ppts-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
+.pcnt-n{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
+.pcnt-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
+.ppts{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(13px,2.2vw,17px);color:var(--wht);letter-spacing:-.01em;}
+.ppts-l{font-size:8px;color:var(--mut);letter-spacing:.04em;}
 
-/* ── FLY LAYER ── */
+/* FLY LAYER */
 #fly-layer{position:fixed;inset:0;pointer-events:none;z-index:500;}
-.fly{
-  position:fixed;pointer-events:none;border-radius:8px;
+.fly{position:fixed;pointer-events:none;border-radius:7px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  box-shadow:0 12px 40px rgba(0,0,0,.6);overflow:hidden;will-change:transform,opacity;
-}
+  box-shadow:0 10px 36px rgba(0,0,0,.7);overflow:hidden;will-change:transform,opacity;}
 .fly.face{background:var(--cream);border:1.5px solid var(--cdim);}
 .fly.back{background:var(--br);border:1.5px solid var(--brl);}
 
-/* ── SUIT PICKER ── */
-#suit-picker{
-  position:fixed;inset:0;z-index:600;
-  background:rgba(5,5,5,.8);
-  backdrop-filter:blur(44px) saturate(190%);-webkit-backdrop-filter:blur(44px) saturate(190%);
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  gap:clamp(16px,3vh,28px);
-}
-#suit-picker.open{display:flex;animation:popIn .3s var(--spring-heavy) both;}
-.sp-eyebrow{font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:var(--brl);margin-bottom:-6px;}
-.sp-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(24px,4vw,36px);color:var(--wht);letter-spacing:-.02em;line-height:1;}
-.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;width:min(320px,80vw);}
-.sp-btn{
-  width:100%;aspect-ratio:1;
-  background:rgba(12,12,12,.8);border:1px solid rgba(255,255,255,.09);border-radius:6px;
-  box-shadow:0 4px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
-  cursor:pointer;transition:all .22s var(--spring-heavy);position:relative;overflow:hidden;
-}
-.sp-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(107,58,42,.08),transparent);
-  opacity:0;transition:opacity .2s;
-}
-.sp-btn:hover{
-  background:rgba(18,18,18,.95);border-color:rgba(107,58,42,.55);
-  transform:scale(1.06);
-  box-shadow:0 0 0 1px rgba(107,58,42,.35),0 14px 32px rgba(107,58,42,.28),inset 0 1px 0 rgba(255,255,255,.12);
-}
-.sp-btn:hover::before{opacity:1;}
-.sp-btn:active{transform:scale(.95);}
-.sp-nm{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);transition:color .2s;}
-.sp-btn:hover .sp-nm{color:var(--wht);}
-.sp-full{grid-column:span 2;width:100%;aspect-ratio:auto;padding:clamp(14px,2vh,20px);flex-direction:row;gap:14px;}
+/* SUIT PICKER — full glassmorphism modal */
+#suit-picker{position:fixed;inset:0;z-index:600;
+  background:rgba(5,5,5,.72);
+  backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.5vh,22px);}
+#suit-picker.open{display:flex;animation:popIn .22s var(--expo) both;}
+.sp-title{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);}
+.sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sp-btn{width:clamp(88px,12vw,112px);height:clamp(88px,12vw,112px);
+  background:rgba(13,13,13,.7);border:1px solid rgba(255,255,255,.1);border-radius:2px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 4px 16px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  cursor:pointer;transition:background .18s,border-color .18s,transform .22s var(--spring-heavy),box-shadow .18s;}
+.sp-btn:hover{background:rgba(20,20,20,.85);border-color:rgba(107,58,42,.5);transform:scale(1.04);
+  box-shadow:0 0 0 1px rgba(107,58,42,.3),0 8px 24px rgba(107,58,42,.2),inset 0 1px 0 rgba(255,255,255,.1);}
+.sp-btn:active{transform:scale(.97);}
+.sp-nm{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);}
+.sp-full{grid-column:span 2;width:100%;height:clamp(56px,7vw,72px);}
 
-/* ── GAME OVER ── */
-#game-over{
-  position:fixed;inset:0;z-index:700;
-  background:rgba(5,5,5,.88);
-  backdrop-filter:blur(40px) saturate(160%);-webkit-backdrop-filter:blur(40px) saturate(160%);
+/* GAME OVER — glassmorphism overlay */
+#game-over{position:fixed;inset:0;z-index:700;
+  background:rgba(5,5,5,.78);
+  backdrop-filter:blur(36px) saturate(160%);-webkit-backdrop-filter:blur(36px) saturate(160%);
   border-top:1px solid rgba(255,255,255,.06);
   display:none;flex-direction:column;align-items:center;justify-content:center;
-  gap:clamp(8px,1.8vh,16px);padding:clamp(18px,4vw,44px);text-align:center;
-}
-#game-over.open{display:flex;animation:popIn .35s var(--spring-heavy) both;}
-/* Radial glow tint on game over */
-#game-over::before{
-  content:'';position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  width:min(500px,90vw);height:min(500px,90vw);
-  background:radial-gradient(circle,rgba(107,58,42,.06) 0%,transparent 65%);
-  pointer-events:none;
-}
-.go-r{
-  font-family:'Playfair Display',serif;font-weight:900;
-  font-size:clamp(44px,10vw,90px);letter-spacing:-.04em;line-height:.88;
-  position:relative;z-index:1;
-}
-.go-r.win{color:var(--wht);}
-.go-r.loss{color:var(--red);}
-.go-sub{font-size:9px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;position:relative;z-index:1;}
-.go-sc{display:flex;gap:clamp(20px,4vw,44px);margin:12px 0;position:relative;z-index:1;}
-.go-scc{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  gap:clamp(8px,1.8vh,16px);padding:clamp(18px,4vw,44px);text-align:center;}
+#game-over.open{display:flex;animation:popIn .28s var(--expo) both;}
+.go-r{font-family:'Playfair Display',serif;font-weight:900;
+  font-size:clamp(44px,10vw,90px);letter-spacing:-.04em;line-height:.88;}
+.go-r.win{color:var(--wht);}.go-r.loss{color:var(--red);}
+.go-sub{font-size:9px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;}
+.go-sc{display:flex;gap:clamp(20px,4vw,44px);margin:2px 0;}
+.go-scc{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .go-sv{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(26px,4.5vw,44px);color:var(--wht);}
 .go-sl{font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);}
-.go-e{
-  font-size:9px;letter-spacing:.1em;color:var(--red);text-transform:uppercase;
-  padding:8px 16px;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.2);
-  border-radius:3px;position:relative;z-index:1;
-}
-.go-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px;position:relative;z-index:1;}
-.btn-p{
-  background:var(--wht);color:var(--black);font-family:'DM Mono',monospace;font-weight:500;
+.go-e{font-size:9px;letter-spacing:.1em;color:var(--red);text-transform:uppercase;}
+.go-btns{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+.btn-p{background:var(--wht);color:var(--black);font-family:'DM Mono',monospace;
   font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-  padding:clamp(12px,1.8vh,16px) clamp(24px,4vw,40px);border:none;border-radius:2px;cursor:pointer;
-  transition:all .22s var(--spring);position:relative;overflow:hidden;
-}
-.btn-p::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.2),transparent);opacity:0;transition:opacity .2s;}
-.btn-p:hover{opacity:.92;transform:translateY(-3px);box-shadow:0 10px 28px rgba(255,255,255,.2);}
-.btn-p:hover::before{opacity:1;}
-.btn-p:active{transform:translateY(0);box-shadow:none;}
-.btn-g{
-  background:transparent;color:var(--mut);font-family:'DM Mono',monospace;
+  padding:clamp(10px,1.6vh,14px) clamp(22px,3.5vw,36px);border:none;cursor:pointer;
+  transition:opacity .18s,transform .2s var(--spring);}
+.btn-p:hover{opacity:.85;transform:translateY(-2px);}.btn-p:active{transform:translateY(0);}
+.btn-g{background:transparent;color:var(--mut);font-family:'DM Mono',monospace;
   font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-  padding:12px 24px;border:1px solid rgba(255,255,255,.15);border-radius:2px;cursor:pointer;
-  transition:all .2s;
-}
-.btn-g:hover{color:var(--wht);border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.05);}
-
-/* ── STANDINGS ── */
-.standings{
-  width:100%;max-width:340px;border:1px solid rgba(255,255,255,.1);border-radius:4px;
-  overflow:hidden;margin:6px 0;background:rgba(0,0,0,.4);position:relative;z-index:1;
-}
-.str{
-  display:grid;grid-template-columns:24px 1fr 52px 52px;
-  padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05);align-items:center;font-size:9px;
-}
+  padding:10px 20px;border:1px solid var(--bdr);cursor:pointer;transition:color .18s,border-color .18s;}
+.btn-g:hover{color:var(--wht);border-color:var(--bdr2);}
+.standings{width:100%;max-width:340px;border:1px solid var(--bdr);overflow:hidden;margin:2px 0;}
+.str{display:grid;grid-template-columns:24px 1fr 52px 52px;
+  padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.04);align-items:center;font-size:9px;}
 .str:last-child{border-bottom:none;}
-.str.hdr{background:var(--s1);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid rgba(255,255,255,.1);}
-.st-rank{font-family:'Playfair Display',serif;font-weight:900;font-size:14px;color:var(--brl);}
-.st-pts{text-align:right;color:var(--mut);font-weight:500;}
+.str.hdr{background:var(--s1);font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);}
+.st-rank{font-family:'Playfair Display',serif;font-weight:900;font-size:13px;color:var(--brl);}
+.st-pts{text-align:right;color:var(--mut);}
 .st-stat{text-align:right;font-size:7px;letter-spacing:.1em;text-transform:uppercase;}
-.st-stat.ok{color:var(--brl);}
-.st-stat.out{color:var(--red);}
+.st-stat.ok{color:var(--brl);}.st-stat.out{color:var(--red);}
 
-/* ── TOAST ── */
-#toast{
-  position:fixed;top:calc(64px + env(safe-area-inset-top,0px));
-  left:50%;transform:translateX(-50%) translateY(-12px);
-  background:rgba(16,16,16,.92);
-  backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);
-  border:1px solid rgba(255,255,255,.14);border-radius:4px;
-  box-shadow:0 6px 24px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);
+/* TOAST — glass pill */
+#toast{position:fixed;top:calc(58px + env(safe-area-inset-top,0px));
+  left:50%;transform:translateX(-50%) translateY(-6px);
+  background:rgba(12,12,12,.75);
+  backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+  border:1px solid rgba(255,255,255,.12);border-radius:2px;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
   font-size:8px;letter-spacing:.18em;text-transform:uppercase;
-  padding:9px 20px;white-space:nowrap;
-  opacity:0;transition:opacity .25s ease-out,transform .35s var(--spring-heavy);
-  z-index:800;pointer-events:none;
-  display:flex;align-items:center;gap:7px;
-}
+  padding:6px 18px;white-space:nowrap;
+  opacity:0;transition:opacity .2s,transform .2s var(--expo);z-index:800;pointer-events:none;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.toast-dot{width:5px;height:5px;border-radius:50%;background:var(--brl);flex-shrink:0;}
 
-/* ── ANIMATIONS ── */
-/* Use translate3d throughout — avoids layout reflow, goes to GPU compositor */
-@keyframes popIn{
-  0%{opacity:0;transform:scale(.92) translate3d(0,14px,0);}
-  60%{opacity:1;}
-  100%{opacity:1;transform:scale(1) translate3d(0,0,0);}
-}
+@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+
+/* ── TASK 3: High-Fidelity Motion ── */
+
+/* Active-turn pulse: subtle breathing glow for current player indicator */
 @keyframes activePulse{
-  0%,100%{opacity:1;text-shadow:0 0 4px rgba(255,255,255,.1);}
-  50%{opacity:.58;text-shadow:0 0 16px rgba(255,255,255,.5);}
+  0%,100%{opacity:1;}
+  50%{opacity:.5;text-shadow:0 0 10px rgba(255,255,255,.3);}
 }
-.pname.active,.tz-name.active{animation:activePulse 2.4s ease-in-out infinite;}
+.pname.active{animation:activePulse 1.9s ease-in-out infinite;}
+.tz-name.active{animation:activePulse 1.9s ease-in-out infinite;}
 
+/* Card fan-in stagger: spring-slide from below, NO opacity change so cards are
+   always visible (opacity:0 start was making the hand appear blank on launch) */
 @keyframes cardFanIn{
-  0%  {opacity:0;transform:translate3d(0,28px,0) rotate(5deg) scale(.9);}
-  40% {opacity:1;}
-  70% {transform:translate3d(0,-4px,0) rotate(-1deg) scale(1.01);}
-  100%{opacity:1;transform:translate3d(0,0,0) rotate(0deg) scale(1);}
+  from{transform:translateY(22px) scale(.93);}
+  to{transform:translateY(0) scale(1);}
 }
 .card.fan-in{
-  animation:cardFanIn .42s var(--spring-cards) both;
+  animation:cardFanIn .38s var(--spring-heavy) both;
   animation-delay:var(--stagger,0ms);
-  will-change:transform,opacity;
 }
 
+/* Draw-card pop: card drawn from pile pops into hand */
 @keyframes cardPop{
-  0%  {transform:translate3d(0,10px,0) scale(.84);}
-  45% {transform:translate3d(0,-6px,0) scale(1.1);}
-  72% {transform:translate3d(0,2px,0) scale(.98);}
-  100%{transform:translate3d(0,0,0) scale(1);}
+  0%{transform:scale(.88);}
+  60%{transform:scale(1.06);}
+  100%{transform:scale(1);}
 }
-.card.just-drawn{animation:cardPop .36s cubic-bezier(0.22,1,0.36,1) both;will-change:transform;}
+.card.just-drawn{animation:cardPop .3s var(--spring-heavy) both;}
 
-@keyframes statusPulse{
-  0%,100%{transform:scale(1);opacity:.7;}
-  50%{transform:scale(1.6);opacity:1;}
-}
-
-/* ── RESPONSIVE ── */
-@media(max-width:390px){:root{--cw:60px;--ch:90px;--scw:24px;--sch:36px;}}
+@media(max-width:390px){:root{--cw:62px;--ch:93px;--scw:26px;--sch:40px;}}
 @media(min-width:768px){:root{--cw:78px;--ch:117px;}}
-
-/* ── LANDSCAPE PHONE (height ≤ 500px) ── */
-@media(orientation:landscape)and(max-height:500px){
-  :root{--cw:52px;--ch:78px;--scw:22px;--sch:33px;}
-
-  /* Slim topbar */
-  #topbar{height:40px;}
-  .tb-logo{font-size:15px;}
-  .tb-mode{font-size:7px;padding:2px 6px;}
-  .tb-rnd{font-size:8px;}
-  .gview{top:calc(40px + env(safe-area-inset-top,0px));}
-
-  /* Quick Play: compress vertical zones */
-  #qv-opp{padding:3px clamp(10px,2vw,18px) 2px;gap:2px;}
-  #qv-opp-fan{height:clamp(28px,7vw,38px);}
-  #qv-center{gap:clamp(10px,2vw,22px);padding:2px clamp(10px,2vw,18px);}
-  #qv-status{height:20px;font-size:8px;letter-spacing:.12em;}
-  #qv-player{padding:1px clamp(10px,2vw,18px) clamp(3px,1vh,6px);gap:2px;}
-  .pile-l{font-size:6px;letter-spacing:.18em;}
-  .pile-n{font-size:7px;padding:1px 5px;}
-  .pname{font-size:7px;letter-spacing:.2em;}
-  .pcnt-n,.ppts{font-size:13px;}
-
-  /* Suit picker: horizontal layout */
-  .sp-grid{gap:8px;width:min(420px,88vw);}
-  .sp-btn{aspect-ratio:unset;padding:10px 6px;}
-  .sp-title{font-size:clamp(18px,3vw,26px);}
-  #suit-picker{gap:clamp(10px,2vh,18px);}
-
-  /* Tournament: compress side zones */
-  .fan-v{height:clamp(60px,14vw,90px);}
-  #tz-bot{bottom:2px;}
-  #tv-player-row{padding:1px clamp(10px,2vw,18px);}
-  #tv-hand{padding:4px 16px 1px;}
-
-  /* Game over: compact */
-  #game-over{gap:clamp(6px,1.5vh,12px);padding:clamp(12px,3vw,28px);}
-  .go-r{font-size:clamp(32px,7vw,56px);}
-  .go-sv{font-size:clamp(20px,4vw,32px);}
-  .btn-p,.btn-g{padding:9px 20px;}
-
-  /* Mode screen: horizontal layout */
-  #mode-screen{flex-direction:column;gap:clamp(6px,1.5vh,14px);padding:clamp(12px,3vw,24px);}
-  .ms-logo{font-size:clamp(36px,8vw,58px);}
-  .ms-eyebrow{margin-bottom:0;}
-  .ms-cards{gap:7px;max-width:480px;}
-  .ms-card{padding:clamp(10px,1.8vh,16px) clamp(14px,2vw,22px);}
-}
-
-/* ── VERY SMALL PORTRAIT (iPhone SE etc.) ── */
-@media(max-width:360px)and(max-height:700px){
-  :root{--cw:58px;--ch:87px;--scw:22px;--sch:33px;}
-  #qv-center{gap:14px;}
-  .pile-l{display:none;}
-}
-
-@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important;transition-property:none !important;}}
 </style>
 </head>
 <body>
 
+<!-- MODE SELECT -->
 <div id="mode-screen">
-  <a href="index.html" class="ms-logo" style="text-decoration:none;color:inherit;display:block;" aria-label="Whot home">Whot<span aria-hidden="true">Whot</span></a>
+  <a href="index.html" class="ms-logo" style="text-decoration:none;color:inherit;display:block;">Whot<span>Whot</span></a>
   <p class="ms-eyebrow">Nigerian Card Game</p>
   <p class="ms-label">Choose your game</p>
-  <div class="ms-cards" role="list">
-    <div class="ms-card" onclick="startGame('quick')" role="listitem" tabindex="0" aria-label="Quick Play: 1 vs 1 against the AI">
+  <div class="ms-cards">
+    <div class="ms-card" onclick="startGame('quick')">
       <svg class="ms-icon" viewBox="0 0 38 38" fill="none"><circle cx="19" cy="19" r="17" stroke="#6B3A2A" stroke-width="1.5"/><path d="M14 12l12 7-12 7V12z" fill="#6B3A2A"/></svg>
-      <div>
-        <div class="ms-name">Quick Play</div>
-        <div class="ms-desc">1 vs 1 · You vs the AI · First to 100 pts loses</div>
-      </div>
+      <div><div class="ms-name">Quick Play</div><div class="ms-desc">1 vs 1 · You vs the AI · First to 100 pts loses</div></div>
       <svg class="ms-arr" viewBox="0 0 14 14" fill="none"><path d="M4 2l6 5-6 5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <div class="ms-card" onclick="startGame('tournament')" role="listitem" tabindex="0" aria-label="Tournament: 5 players, you plus 4 AI">
+    <div class="ms-card" onclick="startGame('tournament')">
       <svg class="ms-icon" viewBox="0 0 38 38" fill="none"><circle cx="10" cy="10" r="5" stroke="#6B3A2A" stroke-width="1.5"/><circle cx="28" cy="10" r="5" stroke="#6B3A2A" stroke-width="1.5"/><circle cx="10" cy="28" r="5" stroke="#6B3A2A" stroke-width="1.5"/><circle cx="28" cy="28" r="5" stroke="#6B3A2A" stroke-width="1.5"/><path d="M10 15v6M28 15v6M15 10h6M15 28h6" stroke="#6B3A2A" stroke-width="1.2"/></svg>
-      <div>
-        <div class="ms-name">Tournament</div>
-        <div class="ms-desc">5 players · You + 4 AI · 4-sided table · Last standing wins</div>
-      </div>
+      <div><div class="ms-name">Tournament</div><div class="ms-desc">4 players · You + 3 AI · Last standing wins</div></div>
       <svg class="ms-arr" viewBox="0 0 14 14" fill="none"><path d="M4 2l6 5-6 5" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
   </div>
-  <a href="index.html" class="ms-back">Back to Home</a>
+  <a href="index.html" class="ms-back">← Back to Home</a>
 </div>
 
+<!-- TOP BAR -->
 <div id="topbar">
   <div class="tb-l">
-    <button class="tb-back" onclick="backToMenu()" aria-label="Back to menu">
+    <button class="tb-back" onclick="backToMenu()">
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L3 6l5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Menu
     </button>
     <div class="tb-sep"></div>
     <span class="tb-mode" id="tb-mode"></span>
   </div>
-  <a href="index.html" class="tb-logo" aria-label="Whot home">Whot</a>
-  <div class="tb-rnd-wrap">
-    <span class="tb-rnd">Round <b id="rnd-num">1</b></span>
-  </div>
+  <a href="index.html" class="tb-logo" style="text-decoration:none;color:inherit;">Whot</a>
+  <span class="tb-rnd">Round <b id="rnd-num">1</b></span>
 </div>
 
+<!-- QUICK PLAY VIEW -->
 <div id="qv" class="gview">
   <div id="qv-opp">
     <div class="pbar">
@@ -603,13 +349,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
     <div id="qv-opp-fan"></div>
   </div>
   <div id="qv-center">
-    <div class="tbadge" id="qv-think" style="top:10px;left:50%;"></div>
-    <div class="cbadge" id="qv-called" style="bottom:10px;left:50%;"></div>
+    <div class="tbadge" id="qv-think" style="top:10px;left:50%;transform:translateX(-50%);"></div>
+    <div class="cbadge" id="qv-called" style="bottom:10px;left:50%;transform:translateX(-50%);"></div>
     <div class="pile-w">
       <span class="pile-l">Draw</span>
-      <div class="card cback" id="qv-draw" onclick="onDraw()" aria-label="Draw a card">
-        <div class="cback-inner"><span class="cbl">Whot</span></div>
-      </div>
+      <div class="card cback" id="qv-draw" onclick="onDraw()"><div class="cback-inner"><span class="cbl">Whot</span></div></div>
       <span class="pile-n" id="qv-draw-cnt">0</span>
     </div>
     <div class="pile-w">
@@ -624,11 +368,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <span class="pname active">You</span>
       <div class="pcnt"><span class="pcnt-n" id="qv-my-cnt">0</span><span class="pcnt-l"> cards</span></div>
     </div>
-    <div id="qv-hand" role="list" aria-label="Your cards"></div>
+    <div id="qv-hand"></div>
   </div>
 </div>
 
+<!-- TOURNAMENT VIEW -->
 <div id="tv" class="gview">
+
+  <!-- Top player -->
   <div class="tz" id="tz-top">
     <div class="tz-info">
       <span class="tz-name" id="tz-top-name">Chidi</span>
@@ -637,6 +384,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
     </div>
     <div class="fan-h" id="tz-top-fan"></div>
   </div>
+
+  <!-- Left player -->
   <div class="tz" id="tz-left">
     <div class="fan-v" id="tz-left-fan"></div>
     <div class="tz-info" style="flex-direction:column;align-items:flex-start;gap:1px;margin-left:3px;">
@@ -645,6 +394,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div><span style="font-size:9px;font-family:'Playfair Display',serif;font-weight:900;color:var(--wht);" id="tz-left-cnt">0</span><span class="tz-l">c</span></div>
     </div>
   </div>
+
+  <!-- Right player -->
   <div class="tz" id="tz-right">
     <div class="fan-v" id="tz-right-fan"></div>
     <div class="tz-info" style="flex-direction:column;align-items:flex-end;gap:1px;margin-right:3px;">
@@ -653,14 +404,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div><span style="font-size:9px;font-family:'Playfair Display',serif;font-weight:900;color:var(--wht);" id="tz-right-cnt">0</span><span class="tz-l">c</span></div>
     </div>
   </div>
+
+  <!-- Center table -->
   <div class="ctable">
-    <div class="tbadge" id="tv-think" style="top:-38px;left:50%;"></div>
-    <div class="cbadge" id="tv-called" style="bottom:-30px;left:50%;"></div>
+    <div class="tbadge" id="tv-think" style="top:-38px;left:50%;transform:translateX(-50%);"></div>
+    <div class="cbadge" id="tv-called" style="bottom:-30px;left:50%;transform:translateX(-50%);"></div>
     <div class="pile-w">
       <span class="pile-l">Draw</span>
-      <div class="card cback" id="tv-draw" onclick="onDraw()" aria-label="Draw a card">
-        <div class="cback-inner"><span class="cbl">Whot</span></div>
-      </div>
+      <div class="card cback" id="tv-draw" onclick="onDraw()"><div class="cback-inner"><span class="cbl">Whot</span></div></div>
       <span class="pile-n" id="tv-draw-cnt">0</span>
     </div>
     <div class="pile-w">
@@ -668,32 +419,38 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
       <div class="card" id="tv-top"></div>
     </div>
   </div>
+
+  <!-- Bottom player (You) -->
   <div class="tz" id="tz-bot">
-    <div id="tv-hand" role="list" aria-label="Your cards"></div>
+    <div id="tv-hand"></div>
     <div id="tv-player-row">
       <div><span class="ppts" id="tv-my-pts">0</span><span class="ppts-l"> pts</span></div>
       <span class="pname active" style="font-size:8px;">You</span>
       <div class="pcnt"><span class="pcnt-n" id="tv-my-cnt">0</span><span class="pcnt-l"> cards</span></div>
     </div>
   </div>
+
+  <!-- Status -->
   <div id="tv-status">Dealing…</div>
 </div>
 
-<div id="fly-layer" aria-hidden="true"></div>
+<!-- Fly layer -->
+<div id="fly-layer"></div>
 
-<div id="suit-picker" role="dialog" aria-modal="true" aria-label="Choose a suit">
-  <p class="sp-eyebrow">Whot Card</p>
+<!-- Suit picker -->
+<div id="suit-picker">
   <p class="sp-title">Call a suit</p>
-  <div class="sp-grid" role="list">
-    <button class="sp-btn" onclick="pickSuit('Circle')" aria-label="Circle"><svg width="34" height="34" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#6B3A2A"/></svg><span class="sp-nm">Circle</span></button>
-    <button class="sp-btn" onclick="pickSuit('Triangle')" aria-label="Triangle"><svg width="34" height="30" viewBox="0 0 20 18"><polygon points="10,0 20,18 0,18" fill="#6B3A2A"/></svg><span class="sp-nm">Triangle</span></button>
-    <button class="sp-btn" onclick="pickSuit('Cross')" aria-label="Cross"><svg width="34" height="34" viewBox="0 0 20 20"><rect x="7" y="0" width="6" height="20" fill="#6B3A2A"/><rect x="0" y="7" width="20" height="6" fill="#6B3A2A"/></svg><span class="sp-nm">Cross</span></button>
-    <button class="sp-btn" onclick="pickSuit('Square')" aria-label="Square"><svg width="30" height="30" viewBox="0 0 18 18"><rect width="18" height="18" fill="#6B3A2A"/></svg><span class="sp-nm">Square</span></button>
-    <button class="sp-btn sp-full" onclick="pickSuit('Star')" aria-label="Star"><svg width="34" height="34" viewBox="0 0 22 22"><polygon points="11,0 13.9,7.6 22,8.2 16,13.4 18.2,21.6 11,17 3.8,21.6 6,13.4 0,8.2 8.1,7.6" fill="#6B3A2A"/></svg><span class="sp-nm">Star</span></button>
+  <div class="sp-grid">
+    <button class="sp-btn" onclick="pickSuit('Circle')"><svg width="32" height="32" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9" fill="#6B3A2A"/></svg><span class="sp-nm">Circle</span></button>
+    <button class="sp-btn" onclick="pickSuit('Triangle')"><svg width="32" height="28" viewBox="0 0 20 18"><polygon points="10,0 20,18 0,18" fill="#6B3A2A"/></svg><span class="sp-nm">Triangle</span></button>
+    <button class="sp-btn" onclick="pickSuit('Cross')"><svg width="32" height="32" viewBox="0 0 20 20"><rect x="7" y="0" width="6" height="20" fill="#6B3A2A"/><rect x="0" y="7" width="20" height="6" fill="#6B3A2A"/></svg><span class="sp-nm">Cross</span></button>
+    <button class="sp-btn" onclick="pickSuit('Square')"><svg width="28" height="28" viewBox="0 0 18 18"><rect width="18" height="18" fill="#6B3A2A"/></svg><span class="sp-nm">Square</span></button>
+    <button class="sp-btn sp-full" onclick="pickSuit('Star')"><svg width="32" height="32" viewBox="0 0 22 22"><polygon points="11,0 13.9,7.6 22,8.2 16,13.4 18.2,21.6 11,17 3.8,21.6 6,13.4 0,8.2 8.1,7.6" fill="#6B3A2A"/></svg><span class="sp-nm">Star</span></button>
   </div>
 </div>
 
-<div id="game-over" role="dialog" aria-modal="true" aria-live="polite">
+<!-- Game over -->
+<div id="game-over">
   <div class="go-r" id="go-r">You Win!</div>
   <div class="go-sub" id="go-sub"></div>
   <div class="go-sc" id="go-sc"></div>
@@ -704,16 +461,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--wht);
     <button class="btn-g" onclick="backToMenu()">Menu</button>
   </div>
 </div>
-
-<div id="toast" aria-live="polite" aria-atomic="true">
-  <span class="toast-dot"></span>
-  <span id="toast-msg"></span>
-</div>
+<div id="toast"></div>
 
 <script>
 const SUITS=['Circle','Triangle','Cross','Square','Star'];
-const AI_NAMES=['Chidi','Amaka','Tunde','Ngozi'];
+const AI_NAMES=['Chidi','Amaka','Tunde'];
 
+// Tournament seats: AI[0]=top, AI[1]=left, AI[2]=right
 const SEATS={
   top:{name:'tz-top-name',pts:'tz-top-pts',cnt:'tz-top-cnt',fan:'tz-top-fan',zone:'tz-top'},
   left:{name:'tz-left-name',pts:'tz-left-pts',cnt:'tz-left-cnt',fan:'tz-left-fan',zone:'tz-left'},
@@ -771,36 +525,39 @@ function getNames(){return MODE==='quick'?['You','Chidi']:['You',...AI_NAMES];}
 /* ── INIT ROUND ── */
 function initRound(){
   const names=getNames();
-  const deck=shuffle(buildDeck());
-  const hands={};
-  for(const n of names)hands[n]=[];
-
-  let si=deck.findIndex(c=>!c.isWhot);if(si<0)si=0;
-  const[startCard]=deck.splice(si,1);
 
   if(!T.scores){
     T.scores={};T.eliminated=new Set();
     for(const n of names)T.scores[n]=0;
   }
 
+  // Only active (non-eliminated) players participate this round
   let active=names.filter(n=>!T.eliminated.has(n));
   if(active.length<2)active=names;
+
+  const deck=shuffle(buildDeck());
+  const hands={};
+  for(const n of active)hands[n]=[];
+
+  let si=deck.findIndex(c=>!c.isWhot);if(si<0)si=0;
+  const[startCard]=deck.splice(si,1);
 
   G={names,turnOrder:active,hands,drawPile:deck,play:[startCard],
     calledSuit:null,pendingPickup:0,pendingNum:0,turnIdx:0,busy:true,
     round:T.round+1};
   T.round=G.round;
 
+  // Pre-deal cards only to active players
   const dealt={};
-  for(const n of names){dealt[n]=[];for(let i=0;i<6;i++){if(G.drawPile.length)dealt[n].push(G.drawPile.shift());}}
+  for(const n of active){dealt[n]=[];for(let i=0;i<6;i++){if(G.drawPile.length)dealt[n].push(G.drawPile.shift());}}
 
   showView();
   setStat('Dealing…','');
   document.getElementById('rnd-num').textContent=G.round;
   renderTopCard();renderDrawCnt();renderAllFans();renderScores();
 
-  animateDeal(names,dealt,()=>{
-    for(const n of names)G.hands[n]=dealt[n];
+  animateDeal(active,dealt,()=>{
+    for(const n of active)G.hands[n]=dealt[n];
     G.busy=false;
     renderAll();
     showToast(`Round ${G.round}`);
@@ -808,6 +565,7 @@ function initRound(){
   });
 }
 
+/* ── LOGIC ── */
 function topCard(){return G.play[G.play.length-1];}
 function actSuit(){return G.calledSuit||topCard().suit;}
 function cur(){return G.turnOrder[G.turnIdx];}
@@ -866,6 +624,7 @@ function applySpecial(who,card){
       setStat(who==='You'?'Next player suspended!':`${who} suspended someone!`,'warn');
       advance();advance();schedNext();break;
     case 14:{
+      // GENERAL MARKET: everyone else draws 1 — turn stays with who played 14
       const others=G.turnOrder.filter(n=>n!==who);
       showToast(who==='You'?'General Market — all draw 1!':`${who}: General Market!`);
       setStat('General Market!','warn');
@@ -908,6 +667,7 @@ function doDrawAction(who){
   one();
 }
 
+/* ── SCHEDULING ── */
 function schedNext(){
   G.busy=false;
   if(myTurn()){hideThinker();renderPlayerHand();setStat('Your turn','yours');}
@@ -946,6 +706,7 @@ function runAI(){
   animAIPlay(who,ch,()=>doPlay(who,ch));
 }
 
+/* ── END ROUND ── */
 function endRound(winner){
   for(const name of G.turnOrder){
     if(name!==winner){const pen=G.hands[name].reduce((s,c)=>s+score(c),0);T.scores[name]=(T.scores[name]||0)+pen;}
@@ -956,33 +717,29 @@ function endRound(winner){
   showGameOver(winner);
 }
 
-/* ═══ POLISHED ANIMATIONS ═══ */
+/* ═══ ANIMATIONS ═══ */
+
+/* fly a card from fromRect to toRect
+   Uses spring-cards bezier for natural overshoot physics */
 function flyIt(fromRect,toRect,html,isBack,onDone){
   const layer=document.getElementById('fly-layer');
   const cw=cssv('--cw')||70,ch=cssv('--ch')||105;
   const el=document.createElement('div');
   el.className='fly '+(isBack?'back':'face');
-  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;`+
-    `width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;`+
-    `transition:none;border-radius:8px;`+
-    `backface-visibility:hidden;-webkit-backface-visibility:hidden;`;
+  el.style.cssText=`left:${fromRect.left}px;top:${fromRect.top}px;width:${fromRect.width||cw}px;height:${fromRect.height||ch}px;transition:none;border-radius:8px;`;
   if(html)el.innerHTML=html;
-  layer.appendChild(el);
-  // Two-frame flush: first rAF queues paint, second confirms composite layer exists
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    const dx=toRect.left+(toRect.width-(fromRect.width||cw))/2-fromRect.left;
-    const dy=toRect.top+(toRect.height-(fromRect.height||ch))/2-fromRect.top;
-    const rot=(Math.random()-.5)*10;
-    // translate3d → GPU compositor path, no layout reflow
-    el.style.transition=
-      'transform 0.40s cubic-bezier(0.22,1,0.36,1),'+
-      'opacity 0.08s 0.34s linear';
-    el.style.transform=`translate3d(${dx}px,${dy}px,0) rotate(${rot}deg)`;
-    el.style.opacity='0';
-    setTimeout(()=>{el.remove();if(onDone)onDone();},420);
-  }));
+  layer.appendChild(el);el.getBoundingClientRect();
+  const dx=toRect.left+(toRect.width-(fromRect.width||cw))/2-fromRect.left;
+  const dy=toRect.top+(toRect.height-(fromRect.height||ch))/2-fromRect.top;
+  const rot=(Math.random()-.5)*10;
+  /* spring-cards: .34,1.18,.64,1 — subtle overshoot, snappy landing */
+  el.style.transition='transform 0.38s cubic-bezier(.34,1.18,.64,1),opacity 0.06s 0.34s';
+  el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
+  el.style.opacity='0';
+  setTimeout(()=>{el.remove();if(onDone)onDone();},420);
 }
 
+/* deal animation: draw pile → each player fan, round-robin */
 function animateDeal(names,dealt,onDone){
   const drawEl=document.getElementById(MODE==='quick'?'qv-draw':'tv-draw');
   if(!drawEl){onDone();return;}
@@ -1000,10 +757,12 @@ function animateDeal(names,dealt,onDone){
   next();
 }
 
+/* get the screen rect where card[idx] lands in a player's fan */
 function fanTargetRect(name,idx){
   const cw=cssv('--cw')||70,ch=cssv('--ch')||105;
   const scw=cssv('--scw')||32,sch=cssv('--sch')||48;
   const total=6;
+
   if(name==='You'){
     const fanEl=document.getElementById(MODE==='quick'?'qv-hand':'tv-hand');
     if(!fanEl)return{left:window.innerWidth/2,top:window.innerHeight-80,width:cw,height:ch};
@@ -1013,6 +772,7 @@ function fanTargetRect(name,idx){
     const sx=fr.left+(fr.width-totalW)/2+idx*(cw-ov);
     return{left:sx,top:fr.top+Math.max(0,(fr.height-ch)/2),width:cw,height:ch};
   }
+
   if(MODE==='quick'){
     const fanEl=document.getElementById('qv-opp-fan');
     if(!fanEl)return{left:window.innerWidth/2,top:60,width:scw,height:sch};
@@ -1020,6 +780,8 @@ function fanTargetRect(name,idx){
     const sp=Math.min(fr.width*.7,180),step=total<=1?0:sp/(total-1);
     return{left:fr.left+fr.width/2-sp/2+idx*step,top:fr.top,width:scw,height:sch};
   }
+
+  // Tournament seats
   const seat=getSeat(name);
   if(seat==='top'){
     const fanEl=document.getElementById('tz-top-fan');
@@ -1045,6 +807,8 @@ function fanTargetRect(name,idx){
   return{left:window.innerWidth/2,top:window.innerHeight/2,width:scw,height:sch};
 }
 
+/* draw card animation: draw pile → player fan
+   After fly, the real card renders with a pop spring burst */
 function animDrawCard(name,card,onDone){
   const drawEl=document.getElementById(MODE==='quick'?'qv-draw':'tv-draw');
   if(!drawEl){if(onDone)onDone();return;}
@@ -1054,17 +818,19 @@ function animDrawCard(name,card,onDone){
   const to=fanTargetRect(name,idx);
   const isMe=name==='You';
   flyIt(from,to,isMe?faceHTML(card):backHTML(),!isMe,()=>{
+    // After card lands, briefly mark the real rendered card with pop anim
     if(isMe){
       setTimeout(()=>{
         const fanId=MODE==='quick'?'qv-hand':'tv-hand';
         const newCard=document.querySelector(`#${fanId} .card[data-id="${card.id}"]`);
-        if(newCard){newCard.classList.add('just-drawn');setTimeout(()=>newCard.classList.remove('just-drawn'),380);}
-      },50);
+        if(newCard){newCard.classList.add('just-drawn');setTimeout(()=>newCard.classList.remove('just-drawn'),350);}
+      },60);
     }
     if(onDone)onDone();
   });
 }
 
+/* AI plays: fan back → play pile (with face reveal) */
 function animAIPlay(who,card,onDone){
   const topEl=document.getElementById(MODE==='quick'?'qv-top':'tv-top');
   if(!topEl){if(onDone)onDone();return;}
@@ -1088,17 +854,16 @@ function animAIPlay(who,card,onDone){
   layer.appendChild(el);el.getBoundingClientRect();
   const dx=tr.left+(tr.width-cw)/2-fr.left;
   const dy=tr.top+(tr.height-ch)/2-fr.top;
-  const rot=(Math.random()-.5)*12;
+  const rot=(Math.random()-.5)*10;
   el.style.width=`${cw}px`;el.style.height=`${ch}px`;
-  el.style.backfaceVisibility='hidden';
-  el.style.transition='width 0s,height 0s,'+
-    'transform 0.40s cubic-bezier(0.22,1,0.36,1),'+
-    'opacity 0.08s 0.34s linear';
-  el.style.transform=`translate3d(${dx}px,${dy}px,0) rotate(${rot}deg)`;
+  /* spring-cards with reveal: card expands to full size mid-flight */
+  el.style.transition='width 0s,height 0s,transform 0.40s cubic-bezier(.34,1.18,.64,1),opacity 0.06s 0.36s';
+  el.style.transform=`translate(${dx}px,${dy}px) rotate(${rot}deg)`;
   el.style.opacity='0';
-  setTimeout(()=>{el.remove();if(onDone)onDone();},440);
+  setTimeout(()=>{el.remove();if(onDone)onDone();},450);
 }
 
+/* player plays: hand card → play pile */
 function animPlayerPlay(card){
   const fanId=MODE==='quick'?'qv-hand':'tv-hand';
   const cardEl=document.querySelector(`#${fanId} .card[data-id="${card.id}"]`);
@@ -1127,7 +892,7 @@ function renderTopCard(){
 
 function renderDrawCnt(){
   const n=G?G.drawPile.length:0;
-  const a=document.getElementById('qv-draw-cnt'),b=document.getElementById('tv-draw-cnt');
+  const a=document.getElementById('qv-draw-cnt');const b=document.getElementById('tv-draw-cnt');
   if(a)a.textContent=n;if(b)b.textContent=n;
 }
 
@@ -1142,10 +907,11 @@ function renderCalledBadge(){
 function renderScores(){
   if(!T.scores)return;
   const my=T.scores['You']||0;
-  const a=document.getElementById('qv-my-pts'),b=document.getElementById('tv-my-pts');
+  const a=document.getElementById('qv-my-pts');const b=document.getElementById('tv-my-pts');
   if(a)a.textContent=my;if(b)b.textContent=my;
 }
 
+/* QP opponent fan */
 function renderQPOppFan(){
   const fan=document.getElementById('qv-opp-fan');if(!fan)return;
   const opp=G.turnOrder.find(n=>n!=='You')||'Chidi';
@@ -1168,19 +934,38 @@ function renderQPOppFan(){
   const pt=document.getElementById('qv-opp-pts');if(pt)pt.textContent=T.scores[opp]||0;
 }
 
+/* Tournament side fan */
 function renderTPSide(name){
   const seat=getSeat(name);if(!seat)return;
   const s=SEATS[seat];
   const fanEl=document.getElementById(s.fan);if(!fanEl)return;
+  const isElim=T.eliminated.has(name);
+  const zone=document.getElementById(s.zone);
+
+  // Always update zone elim state
+  if(zone)zone.classList.toggle('elim',isElim);
+
+  // If eliminated, clear fan and show OUT label, stop
+  if(isElim){
+    fanEl.innerHTML='';
+    const nm=document.getElementById(s.name);
+    if(nm){nm.textContent=name+' · OUT';nm.className='tz-name';}
+    const pt=document.getElementById(s.pts);if(pt)pt.textContent=T.scores[name]||0;
+    const ct=document.getElementById(s.cnt);if(ct)ct.textContent=0;
+    return;
+  }
+
   const hand=G.hands[name]||[];const n=Math.min(hand.length,12);
   fanEl.innerHTML='';
   const isV=seat==='left'||seat==='right';
   const scw=cssv('--scw')||32,sch=cssv('--sch')||48;
+
   if(isV){
     const fr=fanEl.getBoundingClientRect();
     const sp=Math.min((fr.height||120)*.88,110),step=n<=1?0:sp/(n-1),start=-(step*(n-1))/2;
     for(let i=0;i<n;i++){
-      const b=document.createElement('div');b.className='sback sback-v';
+      const b=document.createElement('div');
+      b.className='sback sback-v';
       b.style.cssText=`left:0;top:calc(50% + ${start+i*step}px - ${sch/2}px);z-index:${i};`;
       fanEl.appendChild(b);
     }
@@ -1188,17 +973,17 @@ function renderTPSide(name){
     const fr=fanEl.getBoundingClientRect();
     const sp=Math.min((fr.width||160)*.88,150),step=n<=1?0:sp/(n-1),start=-(step*(n-1))/2;
     for(let i=0;i<n;i++){
-      const b=document.createElement('div');b.className='sback sback-h';
+      const b=document.createElement('div');
+      b.className='sback sback-h';
       b.style.cssText=`left:calc(50% + ${start+i*step}px - ${scw/2}px);top:0;z-index:${i};`;
       fanEl.appendChild(b);
     }
   }
+
   const nm=document.getElementById(s.name);
   if(nm){nm.textContent=name;nm.className='tz-name'+(cur()===name?' active':'');}
   const pt=document.getElementById(s.pts);if(pt)pt.textContent=T.scores[name]||0;
   const ct=document.getElementById(s.cnt);if(ct)ct.textContent=hand.length;
-  const zone=document.getElementById(s.zone);
-  if(zone)zone.classList.toggle('elim',T.eliminated.has(name));
 }
 
 function renderPlayerHand(){
@@ -1206,23 +991,21 @@ function renderPlayerHand(){
   const fan=document.getElementById(fanId);if(!fan)return;
   const myHand=G.hands['You']||[];
   const ok=myTurn()&&!G.busy;
+  // Track previous card IDs to detect if this is a fresh hand (stagger) vs update (no stagger)
   const prevIds=new Set([...fan.querySelectorAll('.card')].map(c=>c.dataset.id));
   const isFreshDeal=prevIds.size===0&&myHand.length>1;
   fan.innerHTML='';
   myHand.forEach((card,idx)=>{
     const playable=ok&&canPlay(card);
     const el=document.createElement('div');
+    // fan-in stagger on fresh deal (game start), spring-in on single new card
     const isNew=!prevIds.has(String(card.id));
     const animClass=(isFreshDeal||(isNew&&myHand.length>1))?'fan-in':'';
     el.className='card ov'+(playable?' playable':(ok?' dim':''))+(animClass?' '+animClass:'');
-    if(animClass)el.style.setProperty('--stagger',`${idx*45}ms`);
-    el.dataset.id=card.id;
-    el.innerHTML=faceHTML(card);
-    el.setAttribute('role','listitem');
-    if(playable){
-      el.setAttribute('aria-label',`Play ${card.isWhot?'Whot':card.number+' '+card.suit}`);
-      el.addEventListener('click',()=>{if(!myTurn()||G.busy)return;animPlayerPlay(card);});
-    }
+    // Stagger delay: 40ms per card position, so hand fans out L→R
+    if(animClass)el.style.setProperty('--stagger',`${idx*40}ms`);
+    el.dataset.id=card.id;el.innerHTML=faceHTML(card);
+    if(playable)el.addEventListener('click',()=>{if(!myTurn()||G.busy)return;animPlayerPlay(card);});
     fan.appendChild(el);
   });
   const cEl=document.getElementById(MODE==='quick'?'qv-my-cnt':'tv-my-cnt');
@@ -1263,13 +1046,9 @@ function hideThinker(){['qv-think','tv-think'].forEach(id=>{const el=document.ge
 
 let _tt=null;
 function showToast(msg){
-  const el=document.getElementById('toast');
-  const msgEl=document.getElementById('toast-msg');
-  if(!el||!msgEl)return;
-  msgEl.textContent=msg;
-  el.classList.add('show');
-  clearTimeout(_tt);
-  _tt=setTimeout(()=>el.classList.remove('show'),2500);
+  const el=document.getElementById('toast');if(!el)return;
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2200);
 }
 
 function showView(){
@@ -1353,11 +1132,7 @@ function backToMenu(){
   G=null;T={round:0,scores:null,eliminated:new Set()};
 }
 
-// Keyboard accessibility for mode cards
-document.querySelectorAll('.ms-card').forEach(card=>{
-  card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();card.click();}});
-});
-
+// URL param direct launch
 (function(){const p=new URLSearchParams(window.location.search).get('mode');if(p==='quick'||p==='tournament')startGame(p);})();
 </script>
 </body>
